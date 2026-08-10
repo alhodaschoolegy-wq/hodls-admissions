@@ -420,7 +420,7 @@
       return {
         stage: val("stage"),
         grade: val("grade"),
-        secondLanguage: val("secondLanguage"),
+        secondLanguage: val("secondLanguage") || "لا توجد",
         studentName: val("studentName"),
         nationalId: val("nationalId"),
         birthDate: val("birthDate"),

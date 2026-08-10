@@ -3,7 +3,7 @@ import { parseEgyptianNationalId } from "../utils/nationalId.js";
 import { clean, checkRateLimit, getClientIp } from "../utils/security.js";
 
 const VALID_STAGES = ["المرحلة الابتدائية", "المرحلة الإعدادية", "المرحلة الثانوية"];
-const VALID_LANGUAGES = ["اللغة الفرنسية", "اللغة الألمانية"];
+const VALID_LANGUAGES = ["اللغة الفرنسية", "اللغة الألمانية", "لا توجد", "بدون", ""];
 
 export class ApplicationController {
   /**
@@ -38,8 +38,10 @@ export class ApplicationController {
     const nidInfo = parseEgyptianNationalId(body.nationalId);
     if (!nidInfo.valid) errors.push(nidInfo.error);
 
-    const secondLanguage = clean(body.secondLanguage);
-    if (!VALID_LANGUAGES.includes(secondLanguage)) errors.push("يرجى اختيار لغة أجنبية ثانية صحيحة.");
+    let secondLanguage = clean(body.secondLanguage);
+    if (!secondLanguage || secondLanguage === "بدون" || secondLanguage === "none" || secondLanguage === "—") {
+      secondLanguage = "لا توجد";
+    }
 
     const fatherName = clean(body.fatherName);
     if (!fatherName || fatherName.length < 3) errors.push("يرجى كتابة اسم الأب ثلاثياً على الأقل.");
@@ -330,7 +332,10 @@ export class ApplicationController {
     }
     if (body.stage) updateData.stage = clean(body.stage);
     if (body.grade) updateData.grade = clean(body.grade);
-    if (body.secondLanguage) updateData.second_language = clean(body.secondLanguage);
+    if (body.secondLanguage !== undefined) {
+      const lang = clean(body.secondLanguage);
+      updateData.second_language = lang || "لا توجد";
+    }
     if (body.fatherName) updateData.father_name = clean(body.fatherName);
     if (body.fatherJob !== undefined) updateData.father_job = clean(body.fatherJob);
     if (body.motherName) updateData.mother_name = clean(body.motherName);

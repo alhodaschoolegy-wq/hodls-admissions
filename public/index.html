@@ -270,7 +270,7 @@
                   <div class="form-group form-group-full">
                     <label for="secondLanguage"><i class="fa-solid fa-language"></i> اللغة الأجنبية الثانية المفضلة <span style="font-size:11px; font-weight:500; color:#7c9887;">(اختياري)</span></label>
                     <select id="secondLanguage" class="form-control">
-                      <option value="">لم يتم الاختيار بعد</option>
+                      <option value="لا توجد">بدون / لا توجد لغة ثانية</option>
                       <option value="اللغة الفرنسية">اللغة الفرنسية (French)</option>
                       <option value="اللغة الألمانية">اللغة الألمانية (Deutsch)</option>
                     </select>
@@ -513,8 +513,9 @@
           </div>
 
           <div class="form-group form-group-full">
-            <label for="pEdit_secondLanguage"><span class="req">*</span> <i class="fa-solid fa-language"></i> اللغة الأجنبية الثانية</label>
-            <select id="pEdit_secondLanguage" class="form-control" required>
+            <label for="pEdit_secondLanguage"><i class="fa-solid fa-language"></i> اللغة الأجنبية الثانية المفضلة <span style="font-size:11px; font-weight:500; color:#7c9887;">(اختياري)</span></label>
+            <select id="pEdit_secondLanguage" class="form-control">
+              <option value="لا توجد">بدون / لا توجد لغة ثانية</option>
               <option value="اللغة الفرنسية">اللغة الفرنسية (French)</option>
               <option value="اللغة الألمانية">اللغة الألمانية (Deutsch)</option>
             </select>
