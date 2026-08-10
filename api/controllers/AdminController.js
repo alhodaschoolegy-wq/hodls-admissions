@@ -317,12 +317,13 @@ export class AdminController {
 
     const supabase = getSupabase();
     if (supabase) {
-      await supabase.from("school_settings").upsert({
+      const { error } = await supabase.from("school_settings").upsert({
         id: "current_settings",
         category_visibility: categoryVisibility,
         section_visibility: sectionVisibility,
         updated_at: new Date().toISOString(),
       }, { onConflict: "id" });
+      if (error) return res.status(500).json({ success: false, message: 'DB Error: ' + error.message });
     }
 
     return res.status(200).json({
@@ -346,12 +347,16 @@ export class AdminController {
 
     const supabase = getSupabase();
     if (supabase) {
-      await supabase.from("school_settings").upsert({
+      const { error } = await supabase.from("school_settings").upsert({
         id: "current_settings",
         parent_edits_enabled: parentEditsEnabled,
         parent_edit_deadline: parentEditDeadline,
         updated_at: new Date().toISOString(),
       }, { onConflict: "id" });
+      if (error) {
+        console.error('Supabase Upsert Error:', error);
+        return res.status(500).json({ success: false, message: 'Database error: ' + error.message });
+      }
     }
 
     const deadlineTime = new Date(parentEditDeadline).getTime();
@@ -388,12 +393,16 @@ export class AdminController {
 
     const supabase = getSupabase();
     if (supabase) {
-      await supabase.from("school_settings").upsert({
+      const { error } = await supabase.from("school_settings").upsert({
         id: "current_settings",
         academic_year: academicYear,
         academic_year_start: startYear,
         updated_at: new Date().toISOString(),
       });
+      if (error) {
+        console.error('Supabase Upsert Error:', error);
+        return res.status(500).json({ success: false, message: 'Database error: ' + error.message });
+      }
     }
 
     return res.status(200).json({ success: true, message: "تم تحديث العام الدراسي بنجاح." });
@@ -433,11 +442,12 @@ export class AdminController {
     }
     currentPhotos.unshift(newPhoto);
 
-    await supabase.from("school_settings").upsert({
+    const { error } = await supabase.from("school_settings").upsert({
       id: "current_settings",
       school_photos: currentPhotos,
       updated_at: new Date().toISOString(),
     });
+    if (error) return res.status(500).json({ success: false, message: 'DB Error: ' + error.message });
 
     return res.status(201).json({ success: true, message: "تمت إضافة الصورة بنجاح للمعرض.", photo: newPhoto });
   }
@@ -464,11 +474,12 @@ export class AdminController {
     
     currentPhotos = currentPhotos.filter((p) => p.id !== photoId);
 
-    await supabase.from("school_settings").upsert({
+    const { error } = await supabase.from("school_settings").upsert({
       id: "current_settings",
       school_photos: currentPhotos,
       updated_at: new Date().toISOString(),
     });
+    if (error) return res.status(500).json({ success: false, message: 'DB Error: ' + error.message });
 
     return res.status(200).json({ success: true, message: "تم حذف الصورة من المعرض بنجاح." });
   }

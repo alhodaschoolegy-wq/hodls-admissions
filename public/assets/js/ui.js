@@ -38,10 +38,10 @@ export const UI = {
       if (serverSettings.categoryVisibility) this.appSettings.categoryVisibility = serverSettings.categoryVisibility;
       if (serverSettings.sectionVisibility) this.appSettings.sectionVisibility = serverSettings.sectionVisibility;
 
-      if (Array.isArray(serverSettings.schoolPhotos) && serverSettings.schoolPhotos.length > 0) {
+      if (Array.isArray(serverSettings.schoolPhotos)) {
         this.appSettings.schoolPhotos = serverSettings.schoolPhotos;
       } else {
-        this.appSettings.schoolPhotos = DEFAULT_SCHOOL_PHOTOS;
+        this.appSettings.schoolPhotos = [];
       }
 
       window.__ACTIVE_ACADEMIC_YEAR_START__ = this.appSettings.academicYearStart || 2026;
@@ -146,7 +146,7 @@ export const UI = {
     if (!container) return;
 
     const categoryVisibility = this.appSettings.categoryVisibility || {};
-    const allPhotos = (this.appSettings.schoolPhotos && this.appSettings.schoolPhotos.length > 0) ? this.appSettings.schoolPhotos : DEFAULT_SCHOOL_PHOTOS;
+    const allPhotos = Array.isArray(this.appSettings.schoolPhotos) ? this.appSettings.schoolPhotos : [];
     
     const visiblePhotos = allPhotos.filter((p) => categoryVisibility[p.category] !== false);
     const filtered = category === "all" ? visiblePhotos : visiblePhotos.filter((p) => p.category === category);
