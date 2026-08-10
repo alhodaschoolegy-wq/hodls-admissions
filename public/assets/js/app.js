@@ -158,6 +158,19 @@
         throw new Error(data.message || "حدث خطأ أثناء الاستعلام.");
       }
       return data;
+    },
+
+    async parentUpdateApplication(updateData) {
+      const response = await fetch("/api?action=parentUpdateApplication", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updateData)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success === false) {
+        throw new Error(data.message || "فشل حفظ التعديلات.");
+      }
+      return data;
     }
   };
 
@@ -630,14 +643,41 @@
         if (!data.found) {
           trackResult.innerHTML = `<div class="alert-box alert-error" style="display:block;">${data.message || "لم يتم العثور على طلب مسجل بهذه البيانات."}</div>`;
         } else {
+          window.currentTrackedStudent = data;
+
           let badgeClass = "review";
           if (data.status === "مقبول نهائياً" || data.status === "مقبول") badgeClass = "accepted";
           else if (data.status === "مقبول مبدئياً") badgeClass = "initial-accepted";
           else if (data.status === "يحتاج استكمال أوراق") badgeClass = "warning";
           else if (data.status === "مرفوض") badgeClass = "rejected";
 
+          const gp = data.parentEditGracePeriod || {};
+          let gracePeriodBanner = "";
+
+          if (gp.canParentEdit) {
+            gracePeriodBanner = `
+              <div class="alert-box" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px; background:rgba(8,122,60,0.08); border:1px solid rgba(8,122,60,0.25); color:#04381e; padding:10px 14px; border-radius:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-hourglass-half text-emerald" style="font-size:16px;"></i>
+                  <span><strong>فترة السماح نشطة:</strong> متبقي <strong>${gp.remainingDays} يوم</strong> على إغلاق إمكانية تعديل البيانات.</span>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" onclick="openParentEditModal()" style="padding:6px 14px; font-size:12.5px;">
+                  <i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الطلب
+                </button>
+              </div>
+            `;
+          } else {
+            gracePeriodBanner = `
+              <div class="alert-box" style="display:flex; align-items:center; gap:8px; margin-bottom:14px; background:#f8faf9; border:1px solid #cbd5e1; color:#64748b; padding:10px 14px; border-radius:8px;">
+                <i class="fa-solid fa-lock" style="font-size:15px;"></i>
+                <span>فترة تعديل البيانات مغلقة حالياً بقرار من إدارة المدرسة.</span>
+              </div>
+            `;
+          }
+
           trackResult.innerHTML = `
             <div class="tracking-card">
+              ${gracePeriodBanner}
               <div class="tracking-card-head">
                 <div>
                   <span class="tracking-app-id">${data.applicationId}</span>
@@ -668,6 +708,99 @@
         searchBtn.textContent = "بحث عن الطلب";
       }
     }
+
+    // Parent Edit Modal Handlers
+    window.openParentEditModal = function() {
+      const data = window.currentTrackedStudent;
+      if (!data) return;
+
+      const modal = document.getElementById("parentEditModal");
+      if (!modal) return;
+
+      document.getElementById("parentEditAppIdBadge").textContent = data.applicationId;
+      document.getElementById("pEdit_studentName").value = data.studentName || "";
+      document.getElementById("pEdit_stage").value = data.stage || "المرحلة الابتدائية";
+      window.handleParentStageChange(data.stage, data.grade);
+      document.getElementById("pEdit_secondLanguage").value = data.secondLanguage || "اللغة الفرنسية";
+      document.getElementById("pEdit_fatherName").value = data.fatherName || "";
+      document.getElementById("pEdit_fatherJob").value = data.fatherJob || "";
+      document.getElementById("pEdit_motherName").value = data.motherName || "";
+      document.getElementById("pEdit_motherJob").value = data.motherJob || "";
+      document.getElementById("pEdit_guardianPhone").value = data.guardianPhone || "";
+      document.getElementById("pEdit_guardianPhoneAlt").value = data.guardianPhoneAlt || "";
+      document.getElementById("pEdit_email").value = data.email || "";
+      document.getElementById("pEdit_address").value = data.address || "";
+      document.getElementById("pEdit_previousSchool").value = data.previousSchool || "";
+      document.getElementById("pEdit_notes").value = data.notes || "";
+
+      modal.classList.add("show");
+    };
+
+    window.closeParentEditModal = function() {
+      document.getElementById("parentEditModal")?.classList.remove("show");
+    };
+
+    window.handleParentStageChange = function(presetStage, presetGrade) {
+      const stage = presetStage || document.getElementById("pEdit_stage")?.value;
+      const gradeSelect = document.getElementById("pEdit_grade");
+      if (!gradeSelect) return;
+
+      const grades = GRADES_BY_STAGE[stage] || [];
+      gradeSelect.innerHTML = grades.map((g) => `<option value="${g}">${g}</option>`).join("");
+      if (presetGrade && grades.includes(presetGrade)) {
+        gradeSelect.value = presetGrade;
+      }
+    };
+
+    window.handleParentEditSubmit = async function(event) {
+      if (event) event.preventDefault();
+      const data = window.currentTrackedStudent;
+      if (!data) return;
+
+      const submitBtn = document.getElementById("btnSaveParentEdit");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+      }
+
+      try {
+        const updatePayload = {
+          applicationId: data.applicationId,
+          nationalId: data.nationalId,
+          studentName: document.getElementById("pEdit_studentName").value.trim(),
+          stage: document.getElementById("pEdit_stage").value,
+          grade: document.getElementById("pEdit_grade").value,
+          secondLanguage: document.getElementById("pEdit_secondLanguage").value,
+          fatherName: document.getElementById("pEdit_fatherName").value.trim(),
+          fatherJob: document.getElementById("pEdit_fatherJob").value.trim(),
+          motherName: document.getElementById("pEdit_motherName").value.trim(),
+          motherJob: document.getElementById("pEdit_motherJob").value.trim(),
+          guardianPhone: document.getElementById("pEdit_guardianPhone").value.trim(),
+          guardianPhoneAlt: document.getElementById("pEdit_guardianPhoneAlt").value.trim(),
+          email: document.getElementById("pEdit_email").value.trim(),
+          address: document.getElementById("pEdit_address").value.trim(),
+          previousSchool: document.getElementById("pEdit_previousSchool").value.trim(),
+          notes: document.getElementById("pEdit_notes").value.trim(),
+        };
+
+        await ApiService.parentUpdateApplication(updatePayload);
+        window.closeParentEditModal();
+
+        alert("تم حفظ وتحديث بيانات طلب التقديم بنجاح!");
+
+        // Refresh tracking view in place
+        const searchInput = document.getElementById("searchQuery");
+        if (searchInput) searchInput.value = data.applicationId;
+        handleTracking();
+      } catch (err) {
+        alert(err.message || "فشل حفظ التعديلات.");
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات';
+        }
+      }
+    };
 
     searchBtn?.addEventListener("click", handleTracking);
     searchInput?.addEventListener("keypress", (e) => {

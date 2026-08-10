@@ -117,7 +117,53 @@
           </div>
         </div>
 
-        <!-- 2. School Photos Gallery Management -->
+        <!-- 2. Parent Edit Grace Period Config -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fa-solid fa-clock-rotate-left text-emerald"></i> فترة سماح تعديل الطلبات لأولياء الأمور</h2>
+            <span id="parentEditLiveBadge" class="badge acceptedInitial" style="font-size:13px;">مفتوح (متبقي — يوم)</span>
+          </div>
+          <p style="color:var(--muted); margin-bottom:16px; font-size:13px;">
+            تتيح هذه الميزة لولي الأمر تعديل بيانات استمارة التقديم بعد تسجيلها خلال فترة محددة، مع إمكانية قفل التعديل بضغطة زر أو تلقائياً فور انتهاء التاريخ المحدد.
+          </p>
+
+          <div class="year-config-box" style="background:#f8faf9; border:1px solid var(--border); border-radius:12px; padding:18px;">
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <!-- Toggle Master Switch -->
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding-bottom:14px; border-bottom:1px solid var(--border);">
+                <div>
+                  <strong style="font-size:14px; color:var(--primary-dark); display:block;">السماح لأولياء الأمور بتعديل الطلبات (Master Switch):</strong>
+                  <small style="color:var(--muted);">عند إيقاف هذا الخيار، يُقفل التعديل فوراً لجميع أولياء الأمور بغض النظر عن التاريخ.</small>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span id="toggleTextLabel" style="font-weight:700; font-size:13px; color:var(--primary);">مفعل</span>
+                  <input type="checkbox" id="parentEditsEnabledToggle" style="width:20px; height:20px; cursor:pointer;" onchange="updateGracePeriodPreview()">
+                </div>
+              </div>
+
+              <!-- Cutoff Deadline Date Picker -->
+              <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:240px;">
+                  <label style="font-weight:700; font-size:13px; display:block; margin-bottom:6px;">
+                    <i class="fa-solid fa-calendar-xmark text-emerald"></i> موعد وتاريخ انتهاء مهلة التعديل (Cutoff Deadline):
+                  </label>
+                  <input type="datetime-local" id="parentEditDeadlineInput" class="swal2-input" style="width:100%; margin:0; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-weight:700;" onchange="updateGracePeriodPreview()">
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                  <button class="btn-action btn-gold-action" onclick="saveParentEditSettings()" style="height:44px; padding:0 24px;">
+                    <i class="fa-solid fa-floppy-disk"></i> حفظ إعدادات فترة التعديل
+                  </button>
+                </div>
+              </div>
+
+              <div id="gracePeriodNoticeBox" style="font-size:12.5px; padding:10px 14px; border-radius:8px; background:rgba(8,122,60,0.06); border:1px solid rgba(8,122,60,0.2); color:#04381e;">
+                <i class="fa-solid fa-circle-info"></i> <span id="gracePeriodNoticeText">جاري فحص الإعدادات...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. School Photos Gallery Management -->
         <div class="panel">
           <div class="panel-header">
             <h2><i class="fa-solid fa-images text-emerald"></i> إدارة معرض صور ومرافق المدرسة</h2>
@@ -172,9 +218,110 @@
           }
         }
 
+        // Parent Edit Grace Period config binding
+        const toggle = document.getElementById("parentEditsEnabledToggle");
+        if (toggle) {
+          toggle.checked = settings.parentEditsEnabled !== false;
+        }
+
+        const deadlineInput = document.getElementById("parentEditDeadlineInput");
+        if (deadlineInput && settings.parentEditDeadline) {
+          const d = new Date(settings.parentEditDeadline);
+          const pad = (n) => String(n).padStart(2, '0');
+          const localStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+          deadlineInput.value = localStr;
+        }
+
+        updateGracePeriodPreview();
         renderSchoolPhotosAdmin(settings.schoolPhotos || []);
       } catch (err) {
         Swal.fire({ icon: "error", title: "خطأ في تحميل الإعدادات", text: err.message });
+      }
+    }
+
+    function updateGracePeriodPreview() {
+      const toggle = document.getElementById("parentEditsEnabledToggle");
+      if (!toggle) return;
+      const isEnabled = toggle.checked;
+      const deadlineVal = document.getElementById("parentEditDeadlineInput").value;
+      const badge = document.getElementById("parentEditLiveBadge");
+      const label = document.getElementById("toggleTextLabel");
+      const noticeBox = document.getElementById("gracePeriodNoticeBox");
+      const noticeText = document.getElementById("gracePeriodNoticeText");
+
+      label.textContent = isEnabled ? "مفعل" : "معطل";
+      label.style.color = isEnabled ? "var(--primary)" : "var(--danger)";
+
+      if (!isEnabled) {
+        badge.className = "badge rejected";
+        badge.innerHTML = '<i class="fa-solid fa-lock"></i> التعديل مقفول يدوياً';
+        noticeBox.style.background = "rgba(220,38,38,0.06)";
+        noticeBox.style.borderColor = "rgba(220,38,38,0.2)";
+        noticeBox.style.color = "#991b1b";
+        noticeText.textContent = "التعديل مقفول بالكامل لجميع أولياء الأمور حالياً بقرار من الإدارة.";
+        return;
+      }
+
+      if (!deadlineVal) {
+        badge.className = "badge accepted";
+        badge.innerHTML = '<i class="fa-solid fa-unlock"></i> التعديل مفتوح';
+        noticeBox.style.background = "rgba(8,122,60,0.06)";
+        noticeBox.style.borderColor = "rgba(8,122,60,0.2)";
+        noticeBox.style.color = "#04381e";
+        noticeText.textContent = "التعديل متاح لأولياء الأمور بدون حد زمني أقصى.";
+        return;
+      }
+
+      const deadline = new Date(deadlineVal);
+      const remainingMs = deadline.getTime() - Date.now();
+      const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+
+      if (remainingMs <= 0) {
+        badge.className = "badge rejected";
+        badge.innerHTML = '<i class="fa-solid fa-clock"></i> انتهت مهلة التعديل';
+        noticeBox.style.background = "rgba(220,38,38,0.06)";
+        noticeBox.style.borderColor = "rgba(220,38,38,0.2)";
+        noticeBox.style.color = "#991b1b";
+        noticeText.textContent = "انتهت فترة السماح المحددة للتعديل، والنظام مغلق تلقائياً في وجه أولياء الأمور.";
+      } else {
+        badge.className = "badge acceptedInitial";
+        badge.innerHTML = `<i class="fa-solid fa-hourglass-half"></i> متاح (متبقي ${remainingDays} يوم)`;
+        noticeBox.style.background = "rgba(8,122,60,0.06)";
+        noticeBox.style.borderColor = "rgba(8,122,60,0.2)";
+        noticeBox.style.color = "#04381e";
+        noticeText.textContent = `فترة التعديل نشطة ومتاحة لأولياء الأمور، ومتبقي ${remainingDays} يوم حتى إغلاق التعديل (${deadline.toLocaleDateString("ar-EG")}).`;
+      }
+    }
+
+    async function saveParentEditSettings() {
+      const enabled = document.getElementById("parentEditsEnabledToggle").checked;
+      const deadlineVal = document.getElementById("parentEditDeadlineInput").value;
+
+      let isoDeadline = "2026-08-31T23:59:59.000Z";
+      if (deadlineVal) {
+        isoDeadline = new Date(deadlineVal).toISOString();
+      }
+
+      try {
+        const res = await apiRequest("updateParentEditSettings", {
+          method: "POST",
+          body: JSON.stringify({
+            enabled,
+            deadline: isoDeadline,
+          }),
+        });
+
+        Swal.fire({
+          icon: "success",
+          title: "تم الحفظ بنجاح",
+          text: res.message,
+          timer: 1800,
+          showConfirmButton: false,
+        });
+
+        updateGracePeriodPreview();
+      } catch (err) {
+        Swal.fire({ icon: "error", title: "خطأ في الحفظ", text: err.message });
       }
     }
 

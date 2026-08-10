@@ -73,6 +73,8 @@ CREATE TABLE IF NOT EXISTS public.school_settings (
     id VARCHAR(32) PRIMARY KEY DEFAULT 'current_settings',
     academic_year VARCHAR(64) DEFAULT '2026 / 2027',
     academic_year_start INT DEFAULT 2026,
+    parent_edits_enabled BOOLEAN DEFAULT TRUE,
+    parent_edit_deadline TIMESTAMPTZ DEFAULT '2026-08-31 23:59:59+03',
     school_photos JSONB DEFAULT '[]'::jsonb,
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

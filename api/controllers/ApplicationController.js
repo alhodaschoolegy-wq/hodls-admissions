@@ -213,6 +213,22 @@ export class ApplicationController {
     const rawPhone = found.guardian_phone || found.guardianPhone || "";
     const maskedPhone = rawPhone.length === 11 ? `${rawPhone.substring(0, 3)}****${rawPhone.substring(7)}` : rawPhone;
 
+    // Check Parent Edit Grace Period Status
+    let currentSettings = { ...MEMORY_STATE.settings };
+    if (supabase) {
+      const { data: st } = await supabase.from("school_settings").select("parent_edits_enabled, parent_edit_deadline").eq("id", "current_settings").maybeSingle();
+      if (st) {
+        if (st.parent_edits_enabled !== undefined) currentSettings.parentEditsEnabled = Boolean(st.parent_edits_enabled);
+        if (st.parent_edit_deadline) currentSettings.parentEditDeadline = st.parent_edit_deadline;
+      }
+    }
+
+    const deadlineTime = new Date(currentSettings.parentEditDeadline || "2026-08-31T23:59:59Z").getTime();
+    const remainingMs = deadlineTime - Date.now();
+    const remainingDays = Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60 * 24)));
+    const isExpired = remainingMs <= 0;
+    const canParentEdit = Boolean(currentSettings.parentEditsEnabled) && !isExpired;
+
     return res.status(200).json({
       found: true,
       applicationId: found.application_id || found.applicationId,
@@ -239,6 +255,128 @@ export class ApplicationController {
       maskedPhone,
       adminNotes: found.admin_notes || found.adminNotes,
       timestamp: found.created_at || found.timestamp || new Date().toISOString(),
+      parentEditGracePeriod: {
+        enabled: Boolean(currentSettings.parentEditsEnabled),
+        deadline: currentSettings.parentEditDeadline,
+        remainingDays,
+        isExpired,
+        canParentEdit,
+      },
+    });
+  }
+
+  /**
+   * Parent Update Application within Grace Period
+   */
+  static async parentUpdate(req, res, body) {
+    const ip = getClientIp(req);
+    const rate = checkRateLimit(`parent_edit_${ip}`, 15, 10 * 60 * 1000);
+    if (!rate.allowed) {
+      return res.status(429).json({ success: false, message: "تم إرسال عدد كبير من الطلبات. يرجى الانتظار." });
+    }
+
+    const supabase = getSupabase();
+
+    // 1. Verify Grace Period Status
+    let currentSettings = { ...MEMORY_STATE.settings };
+    if (supabase) {
+      const { data: st } = await supabase.from("school_settings").select("parent_edits_enabled, parent_edit_deadline").eq("id", "current_settings").maybeSingle();
+      if (st) {
+        if (st.parent_edits_enabled !== undefined) currentSettings.parentEditsEnabled = Boolean(st.parent_edits_enabled);
+        if (st.parent_edit_deadline) currentSettings.parentEditDeadline = st.parent_edit_deadline;
+      }
+    }
+
+    const deadlineTime = new Date(currentSettings.parentEditDeadline || "2026-08-31T23:59:59Z").getTime();
+    const remainingMs = deadlineTime - Date.now();
+    const isExpired = remainingMs <= 0;
+    const canParentEdit = Boolean(currentSettings.parentEditsEnabled) && !isExpired;
+
+    if (!canParentEdit) {
+      return res.status(403).json({
+        success: false,
+        message: "عذراً، فترة تعديل البيانات مغلقة حالياً بقرار من إدارة المدرسة أو لانتهاء مهلة التعديل المحددة.",
+      });
+    }
+
+    // 2. Validate Application Credentials
+    const appId = clean(body.applicationId || body.id).toUpperCase();
+    const nationalId = clean(body.nationalId || body.nid);
+
+    if (!appId || !nationalId) {
+      return res.status(400).json({ success: false, message: "رقم الطلب والرقم القومي مطلوبان للتحقق من هوية صاحب الطلب." });
+    }
+
+    let existingApp = null;
+    if (supabase) {
+      const { data } = await supabase.from("applications").select("*").eq("application_id", appId).eq("national_id", nationalId).maybeSingle();
+      existingApp = data;
+    }
+
+    if (!existingApp) {
+      existingApp = MEMORY_STATE.applications.find((a) => a.applicationId === appId && a.nationalId === nationalId);
+    }
+
+    if (!existingApp) {
+      return res.status(404).json({ success: false, message: "بيانات التحقق غير مطابقة لأي طلب مسجل." });
+    }
+
+    // 3. Sanitize and Validate Updated Fields
+    const updateData = {};
+    if (body.studentName) {
+      const sName = clean(body.studentName);
+      if (sName.length < 3) return res.status(400).json({ success: false, message: "اسم الطالب يجب أن يكون ثلاثياً على الأقل." });
+      updateData.student_name = sName;
+    }
+    if (body.stage) updateData.stage = clean(body.stage);
+    if (body.grade) updateData.grade = clean(body.grade);
+    if (body.secondLanguage) updateData.second_language = clean(body.secondLanguage);
+    if (body.fatherName) updateData.father_name = clean(body.fatherName);
+    if (body.fatherJob !== undefined) updateData.father_job = clean(body.fatherJob);
+    if (body.motherName) updateData.mother_name = clean(body.motherName);
+    if (body.motherJob !== undefined) updateData.mother_job = clean(body.motherJob);
+    if (body.guardianPhone) {
+      const phone = clean(body.guardianPhone);
+      if (!/^01[0125][0-9]{8}$/.test(phone)) return res.status(400).json({ success: false, message: "رقم هاتف ولي الأمر غير صحيح." });
+      updateData.guardian_phone = phone;
+    }
+    if (body.guardianPhoneAlt !== undefined) updateData.guardian_phone_alt = clean(body.guardianPhoneAlt);
+    if (body.email !== undefined) updateData.email = clean(body.email).toLowerCase();
+    if (body.address) updateData.address = clean(body.address);
+    if (body.previousSchool !== undefined) updateData.previous_school = clean(body.previousSchool);
+    if (body.notes !== undefined) updateData.notes = clean(body.notes);
+    updateData.updated_at = new Date().toISOString();
+
+    if (supabase) {
+      const { error } = await supabase.from("applications").update(updateData).eq("application_id", appId);
+      if (error) {
+        return res.status(500).json({ success: false, message: "فشل حفظ التعديلات: " + error.message });
+      }
+    }
+
+    // Update memory cache
+    const item = MEMORY_STATE.applications.find((a) => a.applicationId === appId);
+    if (item) {
+      if (updateData.student_name) item.studentName = updateData.student_name;
+      if (updateData.stage) item.stage = updateData.stage;
+      if (updateData.grade) item.grade = updateData.grade;
+      if (updateData.second_language) item.secondLanguage = updateData.second_language;
+      if (updateData.father_name) item.fatherName = updateData.father_name;
+      if (updateData.father_job !== undefined) item.fatherJob = updateData.father_job;
+      if (updateData.mother_name) item.motherName = updateData.mother_name;
+      if (updateData.mother_job !== undefined) item.motherJob = updateData.mother_job;
+      if (updateData.guardian_phone) item.guardianPhone = updateData.guardian_phone;
+      if (updateData.guardian_phone_alt !== undefined) item.guardianPhoneAlt = updateData.guardian_phone_alt;
+      if (updateData.email !== undefined) item.email = updateData.email;
+      if (updateData.address) item.address = updateData.address;
+      if (updateData.previous_school !== undefined) item.previousSchool = updateData.previous_school;
+      if (updateData.notes !== undefined) item.notes = updateData.notes;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تحديث وحفظ بيانات طلب التقديم بنجاح.",
+      applicationId: appId,
     });
   }
 

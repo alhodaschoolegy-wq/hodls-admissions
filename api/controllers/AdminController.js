@@ -260,20 +260,80 @@ export class AdminController {
    */
   static async getSettings(req, res) {
     const supabase = getSupabase();
+    let currentSettings = { ...MEMORY_STATE.settings };
+
     if (supabase) {
       const { data } = await supabase.from("school_settings").select("*").eq("id", "current_settings").maybeSingle();
       if (data) {
-        return res.status(200).json({
-          success: true,
-          settings: {
-            academicYear: data.academic_year,
-            academicYearStart: data.academic_year_start,
-            schoolPhotos: data.school_photos || [],
-          },
-        });
+        currentSettings.academicYear = data.academic_year || currentSettings.academicYear;
+        currentSettings.academicYearStart = data.academic_year_start || currentSettings.academicYearStart;
+        currentSettings.parentEditsEnabled = data.parent_edits_enabled !== undefined ? Boolean(data.parent_edits_enabled) : true;
+        currentSettings.parentEditDeadline = data.parent_edit_deadline || currentSettings.parentEditDeadline;
+        currentSettings.schoolPhotos = data.school_photos || [];
       }
     }
-    return res.status(200).json({ success: true, settings: MEMORY_STATE.settings });
+
+    const deadlineTime = new Date(currentSettings.parentEditDeadline || "2026-08-31T23:59:59Z").getTime();
+    const now = Date.now();
+    const remainingMs = deadlineTime - now;
+    const remainingDays = Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60 * 24)));
+    const isExpired = remainingMs <= 0;
+    const canParentEdit = Boolean(currentSettings.parentEditsEnabled) && !isExpired;
+
+    return res.status(200).json({
+      success: true,
+      settings: {
+        academicYear: currentSettings.academicYear,
+        academicYearStart: currentSettings.academicYearStart,
+        parentEditsEnabled: Boolean(currentSettings.parentEditsEnabled),
+        parentEditDeadline: currentSettings.parentEditDeadline,
+        remainingDays,
+        isExpired,
+        canParentEdit,
+        schoolPhotos: currentSettings.schoolPhotos || [],
+      },
+    });
+  }
+
+  /**
+   * Update Parent Edit Grace Period Settings (Master Admin only)
+   */
+  static async updateParentEditSettings(req, res, authUser, body) {
+    if (authUser.role !== "master_admin") {
+      return res.status(403).json({ success: false, message: "صلاحية المدير العام فقط." });
+    }
+
+    const parentEditsEnabled = Boolean(body.enabled);
+    const parentEditDeadline = clean(body.deadline) || "2026-08-31T23:59:59Z";
+
+    const supabase = getSupabase();
+    if (supabase) {
+      await supabase.from("school_settings").upsert({
+        id: "current_settings",
+        parent_edits_enabled: parentEditsEnabled,
+        parent_edit_deadline: parentEditDeadline,
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    MEMORY_STATE.settings.parentEditsEnabled = parentEditsEnabled;
+    MEMORY_STATE.settings.parentEditDeadline = parentEditDeadline;
+
+    const deadlineTime = new Date(parentEditDeadline).getTime();
+    const remainingMs = deadlineTime - Date.now();
+    const remainingDays = Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60 * 24)));
+    const canParentEdit = parentEditsEnabled && remainingMs > 0;
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تحديث إعدادات فترة سماح تعديل الطلبات بنجاح.",
+      settings: {
+        parentEditsEnabled,
+        parentEditDeadline,
+        remainingDays,
+        canParentEdit,
+      },
+    });
   }
 
   /**

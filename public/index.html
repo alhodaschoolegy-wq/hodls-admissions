@@ -456,6 +456,112 @@
     </div>
   </div>
 
+  <!-- Parent Application Edit Modal -->
+  <div class="receipt-modal" id="parentEditModal">
+    <div class="receipt-modal-container" style="max-width:780px; width:95%; max-height:90vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #087a3c; padding-bottom:12px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="fa-solid fa-user-pen text-emerald" style="font-size:22px;"></i>
+          <div>
+            <h3 style="margin:0; font-size:17px; color:#04381e; font-weight:800;">تعديل بيانات طلب التقديم</h3>
+            <small id="parentEditAppIdBadge" class="badge acceptedInitial" style="font-size:11px;">HODLS-2026-XXXXX</small>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeParentEditModal()" style="border-radius:50%; width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="parentEditForm" onsubmit="handleParentEditSubmit(event)">
+        <div class="form-grid" style="grid-template-columns:repeat(2, 1fr); gap:12px;">
+          <div class="form-group form-group-full">
+            <label for="pEdit_studentName"><span class="req">*</span> <i class="fa-solid fa-user"></i> اسم الطالب رباعياً</label>
+            <input type="text" id="pEdit_studentName" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pEdit_stage"><span class="req">*</span> <i class="fa-solid fa-school"></i> المرحلة الدراسية</label>
+            <select id="pEdit_stage" class="form-control" required onchange="handleParentStageChange()">
+              <option value="المرحلة الابتدائية">المرحلة الابتدائية</option>
+              <option value="المرحلة الإعدادية">المرحلة الإعدادية</option>
+              <option value="المرحلة الثانوية">المرحلة الثانوية</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pEdit_grade"><span class="req">*</span> <i class="fa-solid fa-chalkboard-user"></i> الصف الدراسي</label>
+            <select id="pEdit_grade" class="form-control" required></select>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="pEdit_secondLanguage"><span class="req">*</span> <i class="fa-solid fa-language"></i> اللغة الأجنبية الثانية</label>
+            <select id="pEdit_secondLanguage" class="form-control" required>
+              <option value="اللغة الفرنسية">اللغة الفرنسية (French)</option>
+              <option value="اللغة الألمانية">اللغة الألمانية (Deutsch)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pEdit_fatherName"><span class="req">*</span> <i class="fa-solid fa-user-tie"></i> اسم الأب</label>
+            <input type="text" id="pEdit_fatherName" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pEdit_fatherJob"><i class="fa-solid fa-briefcase"></i> وظيفة الأب</label>
+            <input type="text" id="pEdit_fatherJob" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="pEdit_motherName"><span class="req">*</span> <i class="fa-solid fa-person-dress"></i> اسم الأم</label>
+            <input type="text" id="pEdit_motherName" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pEdit_motherJob"><i class="fa-solid fa-briefcase"></i> وظيفة الأم</label>
+            <input type="text" id="pEdit_motherJob" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="pEdit_guardianPhone"><span class="req">*</span> <i class="fa-solid fa-phone"></i> هاتف ولي الأمر</label>
+            <input type="tel" id="pEdit_guardianPhone" class="form-control" dir="ltr" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pEdit_guardianPhoneAlt"><i class="fa-solid fa-phone-volume"></i> هاتف بديل / واتساب</label>
+            <input type="tel" id="pEdit_guardianPhoneAlt" class="form-control" dir="ltr">
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="pEdit_email"><i class="fa-solid fa-envelope"></i> البريد الإلكتروني</label>
+            <input type="email" id="pEdit_email" class="form-control" dir="ltr">
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="pEdit_address"><span class="req">*</span> <i class="fa-solid fa-location-dot"></i> العنوان بالتفصيل</label>
+            <input type="text" id="pEdit_address" class="form-control" required>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="pEdit_previousSchool"><i class="fa-solid fa-building-columns"></i> المدرسة السابقة أو الحضانة</label>
+            <input type="text" id="pEdit_previousSchool" class="form-control">
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="pEdit_notes"><i class="fa-solid fa-comment-dots"></i> ملاحظات أو رغبات إضافية</label>
+            <textarea id="pEdit_notes" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #e2e8f0; padding-top:16px;">
+          <button type="button" class="btn btn-outline" onclick="closeParentEditModal()">إلغاء</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveParentEdit">
+            <i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer>
     <div class="container">

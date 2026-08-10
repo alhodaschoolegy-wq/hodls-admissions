@@ -51,12 +51,17 @@ export default async function handler(req, res) {
       return await ApplicationController.submit(req, res, body);
     }
 
-    // D. Admin Login
+    // D. Parent Update Application (Within Grace Period)
+    if (action === "parentUpdateApplication" && req.method === "POST") {
+      return await ApplicationController.parentUpdate(req, res, body);
+    }
+
+    // E. Admin Login
     if (action === "login" && req.method === "POST") {
       return await AdminController.login(req, res, body);
     }
 
-    // E. Admin Logout
+    // F. Admin Logout
     if (action === "logout") {
       return await AdminController.logout(req, res);
     }
@@ -123,6 +128,9 @@ export default async function handler(req, res) {
     // H. Settings Management (Master Admin)
     if (action === "updateAcademicYear" && req.method === "POST") {
       return await AdminController.updateAcademicYear(req, res, authUser, body);
+    }
+    if (action === "updateParentEditSettings" && req.method === "POST") {
+      return await AdminController.updateParentEditSettings(req, res, authUser, body);
     }
     if (action === "addSchoolPhoto" && req.method === "POST") {
       return await AdminController.addSchoolPhoto(req, res, authUser, body);

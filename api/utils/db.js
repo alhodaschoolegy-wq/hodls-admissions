@@ -41,6 +41,8 @@ export const MEMORY_STATE = {
   settings: {
     academicYear: "2026 / 2027",
     academicYearStart: 2026,
+    parentEditsEnabled: true,
+    parentEditDeadline: "2026-08-31T23:59:59.000Z",
     schoolName: "مدرسة الهُدى الرسمية المتميزة للغات",
     schoolPhotos: [
       {
