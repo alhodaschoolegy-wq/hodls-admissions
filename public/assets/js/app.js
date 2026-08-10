@@ -858,17 +858,74 @@
     // ==========================================
     // Dynamic Settings & School Photos Gallery
     // ==========================================
+    const DEFAULT_SCHOOL_PHOTOS = [
+      {
+        id: "photo-1",
+        title: "المبنى المدرسي والواجهة الرئيسية لمدرسة الهُدى",
+        category: "المباني والمرافق",
+        imageUrl: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "photo-2",
+        title: "فناء الطابور الصباحي والمساحات الخضراء والأنشطة",
+        category: "المباني والمرافق",
+        imageUrl: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "photo-3",
+        title: "معامل الحاسب الآلي والبرمجة والروبوتيكس المتطورة",
+        category: "المعامل التكنولوجية",
+        imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "photo-4",
+        title: "معامل العلوم والاستكشاف وتجارب الكيمياء والأحياء",
+        category: "المعامل التكنولوجية",
+        imageUrl: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "photo-5",
+        title: "الفصول الدراسية الذكية والشاشات التفاعلية الحديثة",
+        category: "الفصول الدراسية",
+        imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "photo-6",
+        title: "فصول رياض الأطفال والأنشطة الإبداعية والتعليم المبكر",
+        category: "رياض الأطفال",
+        imageUrl: "https://images.unsplash.com/photo-1587691592099-24045742c181?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "photo-7",
+        title: "الملاعب الرياضية المتعددة وملاعب كرة القدم والسلة",
+        category: "الأنشطة والملاعب",
+        imageUrl: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "photo-8",
+        title: "المسرح المدرسي وقاعة الاحتفالات وتكريم الطلاب المتفوقين",
+        category: "المسرح والفعاليات",
+        imageUrl: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "photo-9",
+        title: "المكتبة المدرسية الشاملة ومركز مصادر التعلم والبحث",
+        category: "المكتبة والثقافة",
+        imageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80"
+      }
+    ];
+
     let appSettings = {
       academicYear: "2026 / 2027",
       academicYearStart: 2026,
-      schoolPhotos: []
+      schoolPhotos: DEFAULT_SCHOOL_PHOTOS
     };
 
     window.renderSchoolPhotosGallery = function(category = "all") {
       const container = document.getElementById("schoolPhotosGalleryGrid");
       if (!container) return;
 
-      const photos = appSettings.schoolPhotos || [];
+      const photos = (appSettings.schoolPhotos && appSettings.schoolPhotos.length > 0) ? appSettings.schoolPhotos : DEFAULT_SCHOOL_PHOTOS;
       const filtered = category === "all" ? photos : photos.filter((p) => p.category === category);
 
       if (filtered.length === 0) {
@@ -925,8 +982,24 @@
     };
 
     async function initSchoolSettingsAndGallery() {
+      // First render with default photos immediately so user sees them without any delay!
+      window.renderSchoolPhotosGallery("all");
+
       try {
-        appSettings = await ApiService.getSettings();
+        const serverSettings = await ApiService.getSettings();
+        if (serverSettings.academicYear) appSettings.academicYear = serverSettings.academicYear;
+        if (serverSettings.academicYearStart) appSettings.academicYearStart = serverSettings.academicYearStart;
+        appSettings.parentEditsEnabled = serverSettings.parentEditsEnabled;
+        appSettings.parentEditDeadline = serverSettings.parentEditDeadline;
+        appSettings.remainingDays = serverSettings.remainingDays;
+        appSettings.canParentEdit = serverSettings.canParentEdit;
+
+        if (Array.isArray(serverSettings.schoolPhotos) && serverSettings.schoolPhotos.length > 0) {
+          appSettings.schoolPhotos = serverSettings.schoolPhotos;
+        } else {
+          appSettings.schoolPhotos = DEFAULT_SCHOOL_PHOTOS;
+        }
+
         window.__ACTIVE_ACADEMIC_YEAR_START__ = appSettings.academicYearStart || 2026;
         
         // Update all dynamic academic year displays

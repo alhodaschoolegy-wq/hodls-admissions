@@ -269,7 +269,12 @@ export class AdminController {
         currentSettings.academicYearStart = data.academic_year_start || currentSettings.academicYearStart;
         currentSettings.parentEditsEnabled = data.parent_edits_enabled !== undefined ? Boolean(data.parent_edits_enabled) : true;
         currentSettings.parentEditDeadline = data.parent_edit_deadline || currentSettings.parentEditDeadline;
-        currentSettings.schoolPhotos = data.school_photos || [];
+        if (Array.isArray(data.school_photos) && data.school_photos.length > 0) {
+          currentSettings.schoolPhotos = data.school_photos;
+        } else {
+          // Sync default curated photos to Supabase in background
+          supabase.from("school_settings").update({ school_photos: currentSettings.schoolPhotos }).eq("id", "current_settings").then(() => {}).catch(() => {});
+        }
       }
     }
 
