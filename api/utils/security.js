@@ -1,18 +1,31 @@
 import jwt from "jsonwebtoken";
-import crypto from "node:crypto";
+import sanitizeHtml from "sanitize-html";
+import { Redis } from "@upstash/redis";
 
-const JWT_SECRET = process.env.SESSION_SECRET || process.env.JWT_SECRET || "HODLS_ENTERPRISE_JWT_KEY_2026_!@#$%^&*()_+";
-const RATE_LIMIT_STORE = new Map();
+const JWT_SECRET = process.env.SESSION_SECRET || process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not configured");
+}
+
+let redis = null;
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+}
 
 /**
  * Sanitize text inputs against XSS and injection
  */
 export function clean(input) {
   if (typeof input !== "string") return "";
-  return input
-    .replace(/[<>]/g, "")
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
-    .trim();
+  const sanitized = sanitizeHtml(input, {
+    allowedTags: [],
+    allowedAttributes: {},
+  });
+  return sanitized.trim();
 }
 
 /**
@@ -40,14 +53,16 @@ export function verifyJwtToken(token) {
  * Create secure HttpOnly Cookie with JWT Token
  */
 export function makeSessionCookie(cookieName, token, maxAgeSeconds = 28800) {
-  return `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}`;
+  const secure = process.env.NODE_ENV === "production" ? "Secure;" : "";
+  return `${cookieName}=${token}; Path=/; HttpOnly; ${secure} SameSite=Lax; Max-Age=${maxAgeSeconds}`;
 }
 
 /**
  * Clear Session Cookie Header
  */
 export function clearSessionCookie(cookieName) {
-  return `${cookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
+  const secure = process.env.NODE_ENV === "production" ? "Secure;" : "";
+  return `${cookieName}=; Path=/; HttpOnly; ${secure} SameSite=Lax; Max-Age=0`;
 }
 
 /**
@@ -63,25 +78,30 @@ export function validateSessionCookie(req, cookieName = "hodls_admin_session") {
 }
 
 /**
- * In-Memory Sliding-Window Rate Limiter
+ * Redis-backed Rate Limiter
  */
-export function checkRateLimit(key, limit = 5, windowMs = 15 * 60 * 1000) {
-  const now = Date.now();
-  const record = RATE_LIMIT_STORE.get(key) || { count: 0, resetAt: now + windowMs };
-
-  if (now > record.resetAt) {
-    record.count = 0;
-    record.resetAt = now + windowMs;
+export async function checkRateLimit(key, limit = 5, windowMs = 15 * 60 * 1000) {
+  if (!redis) {
+    console.warn("Redis is not configured for rate limiting. Pass UPSTASH_REDIS_REST_URL.");
+    return { allowed: true, remaining: limit, resetIn: 0 };
   }
 
-  record.count += 1;
-  RATE_LIMIT_STORE.set(key, record);
-
-  const allowed = record.count <= limit;
-  const remaining = Math.max(0, limit - record.count);
-  const resetIn = Math.ceil((record.resetAt - now) / 1000);
-
-  return { allowed, remaining, resetIn };
+  const now = Date.now();
+  const windowKey = `${key}_${Math.floor(now / windowMs)}`;
+  
+  try {
+    const current = await redis.incr(windowKey);
+    if (current === 1) {
+      await redis.pexpire(windowKey, windowMs);
+    }
+    
+    const allowed = current <= limit;
+    const remaining = Math.max(0, limit - current);
+    return { allowed, remaining, resetIn: Math.ceil(windowMs / 1000) };
+  } catch (err) {
+    console.error("Rate limit error:", err);
+    return { allowed: true, remaining: limit, resetIn: 0 };
+  }
 }
 
 /**

@@ -6,6 +6,18 @@ const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (m) => ({
 }[m]));
 
 async function apiRequest(action, options = {}, queryParams = null) {
+  // --- Local Dev Mock ---
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    console.warn("⚠️ Local Mode Active: Mocking", action);
+    await new Promise(r => setTimeout(r, 600));
+    if (action === "login" || action === "me") return { success: true, user: { username: "admin_local", role: "master_admin", fullName: "مدير النظام (محلي)" } };
+    if (action === "stats") return { success: true, stats: { total: 150, byStatus: { review: 50, acceptedInitial: 40, acceptedFinal: 30, needsDocs: 20, rejected: 10 }, byStage: { primary: 70, prep: 50, sec: 30 } } };
+    if (action === "getSettings") return { success: true, settings: { academicYear: "2026 / 2027", canParentEdit: true, remainingDays: 14 } };
+    if (action === "getStudents") return { success: true, data: [] };
+    return { success: true, message: "Local mock success" };
+  }
+  // ------------------------
+
   const urlObj = new URL("/api", window.location.origin);
   urlObj.searchParams.set("action", action);
   if (queryParams) {
@@ -23,7 +35,11 @@ async function apiRequest(action, options = {}, queryParams = null) {
   if (res.status === 401) {
     // If not authenticated and not on login page, redirect to /admin login
     if (!window.location.pathname.endsWith("admin") && !window.location.pathname.endsWith("admin.html")) {
-      window.location.href = `/admin?redirect=${encodeURIComponent(window.location.pathname)}`;
+      let target = `/admin?redirect=${encodeURIComponent(window.location.pathname)}`;
+      if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        target = `/admin.html?redirect=${encodeURIComponent(window.location.pathname)}`;
+      }
+      window.location.href = target;
     }
     throw new Error("انتهت جلسة العمل، يرجى إعادة تسجيل الدخول.");
   }
@@ -76,7 +92,11 @@ async function initAdminAuth(activePage, onReady) {
     }
   } catch (err) {
     // Redirect to clean admin login portal
-    window.location.href = `/admin?redirect=${encodeURIComponent(window.location.pathname)}`;
+    let target = `/admin?redirect=${encodeURIComponent(window.location.pathname)}`;
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      target = `/admin.html?redirect=${encodeURIComponent(window.location.pathname)}`;
+    }
+    window.location.href = target;
   }
 }
 
@@ -163,7 +183,11 @@ function setupLoginForm(onSuccessCallback) {
         await onSuccessCallback(currentUser);
       } else {
         const params = new URLSearchParams(window.location.search);
-        window.location.href = params.get("redirect") || "/dashboard";
+        let target = params.get("redirect") || "/dashboard";
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+           if (!target.endsWith(".html")) target += ".html";
+        }
+        window.location.href = target;
       }
     } catch (err) {
       if (errBox) {
@@ -186,7 +210,9 @@ async function logout() {
   try {
     await fetch("/api?action=logout", { method: "POST" });
   } finally {
-    window.location.href = "/admin";
+    let target = "/admin";
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") target += ".html";
+    window.location.href = target;
   }
 }
 
@@ -245,4 +271,18 @@ async function changeMyPassword() {
   } catch (err) {
     Swal.fire({ icon: 'error', title: 'خطأ', text: err.message });
   }
+}
+
+
+// Local dev navigation fixer
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (href && href.startsWith('/') && !href.includes('.html') && href !== '/') {
+      e.preventDefault();
+      window.location.href = href + '.html';
+    }
+  });
 }

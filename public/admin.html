@@ -72,7 +72,10 @@
   <script>
     setupLoginForm((user) => {
       const params = new URLSearchParams(window.location.search);
-      const redirect = params.get("redirect") || "/dashboard";
+      let redirect = params.get("redirect") || "/dashboard";
+      if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        if (!redirect.endsWith(".html")) redirect += ".html";
+      }
       window.location.href = redirect;
     });
 
@@ -81,7 +84,10 @@
         const res = await apiRequest("me");
         if (res && res.user) {
           const params = new URLSearchParams(window.location.search);
-          const redirect = params.get("redirect") || "/dashboard";
+          let redirect = params.get("redirect") || "/dashboard";
+          if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            if (!redirect.endsWith(".html")) redirect += ".html";
+          }
           window.location.href = redirect;
         }
       } catch {

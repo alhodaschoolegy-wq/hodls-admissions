@@ -1,8 +1,16 @@
 import { RegistrationController } from "./controllers/registrationController.js";
 import { TrackingController } from "./controllers/trackingController.js";
+import { UI } from "./ui.js";
+import { initGlobalEvents } from "./events.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialize Controllers
+  // Initialize UI Settings and Gallery
+  UI.initSchoolSettingsAndGallery();
+
+  // Initialize Global Event Delegation
+  initGlobalEvents();
+
+  // Initialize Form Controllers
   const registrationCtrl = new RegistrationController();
   const trackingCtrl = new TrackingController();
 

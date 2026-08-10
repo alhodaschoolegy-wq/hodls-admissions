@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { getSupabase, MEMORY_STATE } from "../utils/db.js";
+import { getSupabase } from "../utils/db.js";
 import {
   generateJwtToken,
   makeSessionCookie,
@@ -11,13 +11,37 @@ import {
 
 const COOKIE_NAME = "hodls_admin_session";
 
+const DEFAULT_SETTINGS = {
+  academicYear: "2026 / 2027",
+  academicYearStart: 2026,
+  parentEditsEnabled: true,
+  parentEditDeadline: "2026-08-31T23:59:59.000Z",
+  categoryVisibility: {
+    "المباني والمرافق": true,
+    "المعامل التكنولوجية": true,
+    "الفصول الدراسية": true,
+    "رياض الأطفال": true,
+    "الأنشطة والملاعب": true,
+    "المسرح والفعاليات": true,
+    "المكتبة والثقافة": true,
+  },
+  sectionVisibility: {
+    gallery: true,
+    rules: true,
+    registration: true,
+    tracking: true,
+    contact: true,
+  },
+  schoolPhotos: []
+};
+
 export class AdminController {
   /**
    * Admin Login with Bcrypt & JWT Token
    */
   static async login(req, res, body) {
     const ip = getClientIp(req);
-    const rate = checkRateLimit(`login_${ip}`, 10, 15 * 60 * 1000);
+    const rate = await checkRateLimit(`login_${ip}`, 10, 15 * 60 * 1000);
     if (!rate.allowed) {
       return res.status(429).json({ success: false, message: `محاولات دخول كثيرة. يرجى المحاولة بعد ${rate.resetIn} ثانية.` });
     }
@@ -30,39 +54,21 @@ export class AdminController {
     }
 
     const supabase = getSupabase();
+    if (!supabase) {
+      return res.status(500).json({ success: false, message: "قاعدة البيانات غير متاحة." });
+    }
+
     let matchedUser = null;
-
-    if (supabase) {
-      const { data } = await supabase.from("admin_users").select("*").eq("username", username).eq("status", "active").maybeSingle();
-      if (data) {
-        const isMatch = bcrypt.compareSync(password, data.password_hash) || (password === "admin" && username === "admin") || (password === "master" && username === "master");
-        if (isMatch) {
-          matchedUser = {
-            id: data.id,
-            username: data.username,
-            fullName: data.full_name,
-            role: data.role || "staff_admin",
-          };
-        }
-      }
-    }
-
-    if (!matchedUser) {
-      const found = MEMORY_STATE.users.find((u) => u.username.toLowerCase() === username && u.status === "active");
-      if (found) {
-        const isMatch = (found.passwordHash && bcrypt.compareSync(password, found.passwordHash)) || password === "admin" || password === "123456" || password === "admin123";
-        if (isMatch) matchedUser = found;
-      }
-    }
-
-    // Default emergency fallback
-    if (!matchedUser && (username === "admin" || username === "master")) {
-      if (password === "admin" || password === "admin123" || password === "123456" || password === "master") {
+    const { data } = await supabase.from("admin_users").select("*").eq("username", username).eq("status", "active").maybeSingle();
+    
+    if (data) {
+      const isMatch = bcrypt.compareSync(password, data.password_hash);
+      if (isMatch) {
         matchedUser = {
-          id: 1,
-          username,
-          fullName: username === "master" ? "المدير العام / Master Admin" : "إدارة التنسيق والقبول",
-          role: "master_admin",
+          id: data.id,
+          username: data.username,
+          fullName: data.full_name,
+          role: data.role || "staff_admin",
         };
       }
     }
@@ -110,18 +116,19 @@ export class AdminController {
       return res.status(400).json({ success: false, message: "كلمة المرور الجديدة يجب ألا تقل عن 6 أحرف." });
     }
 
-    const newHash = bcrypt.hashSync(newPassword, 10);
     const supabase = getSupabase();
+    if (!supabase) return res.status(500).json({ success: false, message: "DB Error" });
 
-    if (supabase) {
-      await supabase.from("admin_users").update({
-        password_hash: newHash,
-        updated_at: new Date().toISOString(),
-      }).eq("username", authUser.username);
+    const { data: user } = await supabase.from("admin_users").select("password_hash").eq("username", authUser.username).maybeSingle();
+    if (!user || !bcrypt.compareSync(currentPassword, user.password_hash)) {
+      return res.status(400).json({ success: false, message: "كلمة المرور الحالية غير صحيحة." });
     }
 
-    const item = MEMORY_STATE.users.find((u) => u.username.toLowerCase() === authUser.username.toLowerCase());
-    if (item) item.passwordHash = newHash;
+    const newHash = bcrypt.hashSync(newPassword, 10);
+    await supabase.from("admin_users").update({
+      password_hash: newHash,
+      updated_at: new Date().toISOString(),
+    }).eq("username", authUser.username);
 
     res.setHeader("Set-Cookie", clearSessionCookie(COOKIE_NAME));
     return res.status(200).json({ success: true, message: "تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مجدداً." });
@@ -136,20 +143,20 @@ export class AdminController {
     }
 
     const supabase = getSupabase();
-    let usersList = MEMORY_STATE.users;
+    if (!supabase) return res.status(500).json({ success: false, message: "DB Error" });
 
-    if (supabase) {
-      const { data } = await supabase.from("admin_users").select("id, username, full_name, role, status, created_at").order("created_at", { ascending: false });
-      if (data) {
-        usersList = data.map((d) => ({
-          id: d.id,
-          username: d.username,
-          fullName: d.full_name,
-          role: d.role,
-          status: d.status,
-          createdAt: d.created_at,
-        }));
-      }
+    const { data } = await supabase.from("admin_users").select("id, username, full_name, role, status, created_at").order("created_at", { ascending: false });
+    
+    let usersList = [];
+    if (data) {
+      usersList = data.map((d) => ({
+        id: d.id,
+        username: d.username,
+        fullName: d.full_name,
+        role: d.role,
+        status: d.status,
+        createdAt: d.created_at,
+      }));
     }
 
     return res.status(200).json({ success: true, users: usersList });
@@ -174,30 +181,20 @@ export class AdminController {
 
     const passwordHash = bcrypt.hashSync(password, 10);
     const supabase = getSupabase();
+    if (!supabase) return res.status(500).json({ success: false, message: "DB Error" });
 
-    if (supabase) {
-      const { error } = await supabase.from("admin_users").insert([{
-        username,
-        full_name: fullName,
-        password_hash: passwordHash,
-        role,
-        status: "active",
-        created_at: new Date().toISOString(),
-      }]);
-      if (error) {
-        return res.status(400).json({ success: false, message: "اسم المستخدم مسجل مسبقاً أو حدث خطأ." });
-      }
-    }
-
-    MEMORY_STATE.users.unshift({
-      id: Date.now(),
+    const { error } = await supabase.from("admin_users").insert([{
       username,
-      fullName,
-      passwordHash,
+      full_name: fullName,
+      password_hash: passwordHash,
       role,
       status: "active",
-      createdAt: new Date().toISOString(),
-    });
+      created_at: new Date().toISOString(),
+    }]);
+    
+    if (error) {
+      return res.status(400).json({ success: false, message: "اسم المستخدم مسجل مسبقاً أو حدث خطأ." });
+    }
 
     return res.status(201).json({ success: true, message: `تم إنشاء حساب (${fullName}) بنجاح.` });
   }
@@ -216,11 +213,9 @@ export class AdminController {
     }
 
     const supabase = getSupabase();
-    if (supabase) {
-      await supabase.from("admin_users").delete().eq("username", targetUser);
-    }
+    if (!supabase) return res.status(500).json({ success: false, message: "DB Error" });
 
-    MEMORY_STATE.users = MEMORY_STATE.users.filter((u) => u.username.toLowerCase() !== targetUser);
+    await supabase.from("admin_users").delete().eq("username", targetUser);
     return res.status(200).json({ success: true, message: "تم حذف المستخدم بنجاح." });
   }
 
@@ -241,16 +236,12 @@ export class AdminController {
 
     const passwordHash = bcrypt.hashSync(newPassword, 10);
     const supabase = getSupabase();
+    if (!supabase) return res.status(500).json({ success: false, message: "DB Error" });
 
-    if (supabase) {
-      await supabase.from("admin_users").update({
-        password_hash: passwordHash,
-        updated_at: new Date().toISOString(),
-      }).eq("username", targetUser);
-    }
-
-    const item = MEMORY_STATE.users.find((u) => u.username.toLowerCase() === targetUser);
-    if (item) item.passwordHash = passwordHash;
+    await supabase.from("admin_users").update({
+      password_hash: passwordHash,
+      updated_at: new Date().toISOString(),
+    }).eq("username", targetUser);
 
     return res.status(200).json({ success: true, message: `تم تعيين كلمة المرور الجديدة للمستخدم (${targetUser}) بنجاح.` });
   }
@@ -260,14 +251,13 @@ export class AdminController {
    */
   static async getSettings(req, res) {
     const supabase = getSupabase();
-    let currentSettings = { ...MEMORY_STATE.settings };
+    let currentSettings = { ...DEFAULT_SETTINGS };
 
     if (supabase) {
       const { data } = await supabase.from("school_settings").select("*").eq("id", "current_settings").maybeSingle();
       if (data) {
         currentSettings.academicYear = data.academic_year || currentSettings.academicYear;
         currentSettings.academicYearStart = data.academic_year_start || currentSettings.academicYearStart;
-        // Explicit null check: if column exists in row, use its value; otherwise keep default
         if (data.parent_edits_enabled !== null && data.parent_edits_enabled !== undefined) {
           currentSettings.parentEditsEnabled = Boolean(data.parent_edits_enabled);
         }
@@ -280,12 +270,8 @@ export class AdminController {
         }
         if (Array.isArray(data.school_photos) && data.school_photos.length > 0) {
           currentSettings.schoolPhotos = data.school_photos;
-        } else {
-          // Sync default curated photos to Supabase in background
-          supabase.from("school_settings").update({ school_photos: currentSettings.schoolPhotos }).eq("id", "current_settings").then(() => {}).catch(() => {});
         }
       } else {
-        // No row yet — insert defaults so future saves work correctly
         supabase.from("school_settings").upsert({
           id: "current_settings",
           academic_year: currentSettings.academicYear,
@@ -310,30 +296,10 @@ export class AdminController {
     return res.status(200).json({
       success: true,
       settings: {
-        academicYear: currentSettings.academicYear,
-        academicYearStart: currentSettings.academicYearStart,
-        parentEditsEnabled: Boolean(currentSettings.parentEditsEnabled),
-        parentEditDeadline: currentSettings.parentEditDeadline,
+        ...currentSettings,
         remainingDays,
         isExpired,
         canParentEdit,
-        categoryVisibility: currentSettings.categoryVisibility || {
-          "المباني والمرافق": true,
-          "المعامل التكنولوجية": true,
-          "الفصول الدراسية": true,
-          "رياض الأطفال": true,
-          "الأنشطة والملاعب": true,
-          "المسرح والفعاليات": true,
-          "المكتبة والثقافة": true,
-        },
-        sectionVisibility: currentSettings.sectionVisibility || {
-          gallery: true,
-          rules: true,
-          registration: true,
-          tracking: true,
-          contact: true,
-        },
-        schoolPhotos: currentSettings.schoolPhotos || [],
       },
     });
   }
@@ -346,24 +312,18 @@ export class AdminController {
       return res.status(403).json({ success: false, message: "صلاحية المدير العام فقط." });
     }
 
-    const categoryVisibility = body.categoryVisibility || MEMORY_STATE.settings.categoryVisibility;
-    const sectionVisibility = body.sectionVisibility || MEMORY_STATE.settings.sectionVisibility;
+    const categoryVisibility = body.categoryVisibility || DEFAULT_SETTINGS.categoryVisibility;
+    const sectionVisibility = body.sectionVisibility || DEFAULT_SETTINGS.sectionVisibility;
 
     const supabase = getSupabase();
     if (supabase) {
-      const { error: upsertErr } = await supabase.from("school_settings").upsert({
+      await supabase.from("school_settings").upsert({
         id: "current_settings",
         category_visibility: categoryVisibility,
         section_visibility: sectionVisibility,
         updated_at: new Date().toISOString(),
       }, { onConflict: "id" });
-      if (upsertErr) {
-        console.error("[Supabase] updateCategoryVisibility error:", upsertErr);
-      }
     }
-
-    MEMORY_STATE.settings.categoryVisibility = categoryVisibility;
-    MEMORY_STATE.settings.sectionVisibility = sectionVisibility;
 
     return res.status(200).json({
       success: true,
@@ -386,19 +346,13 @@ export class AdminController {
 
     const supabase = getSupabase();
     if (supabase) {
-      const { error: upsertErr } = await supabase.from("school_settings").upsert({
+      await supabase.from("school_settings").upsert({
         id: "current_settings",
         parent_edits_enabled: parentEditsEnabled,
         parent_edit_deadline: parentEditDeadline,
         updated_at: new Date().toISOString(),
       }, { onConflict: "id" });
-      if (upsertErr) {
-        console.error("[Supabase] updateParentEditSettings error:", upsertErr);
-      }
     }
-
-    MEMORY_STATE.settings.parentEditsEnabled = parentEditsEnabled;
-    MEMORY_STATE.settings.parentEditDeadline = parentEditDeadline;
 
     const deadlineTime = new Date(parentEditDeadline).getTime();
     const remainingMs = deadlineTime - Date.now();
@@ -442,10 +396,7 @@ export class AdminController {
       });
     }
 
-    MEMORY_STATE.settings.academicYear = academicYear;
-    MEMORY_STATE.settings.academicYearStart = startYear;
-
-    return res.status(200).json({ success: true, message: "تم تحديث العام الدراسي بنجاح.", settings: MEMORY_STATE.settings });
+    return res.status(200).json({ success: true, message: "تم تحديث العام الدراسي بنجاح." });
   }
 
   /**
@@ -473,25 +424,21 @@ export class AdminController {
     };
 
     const supabase = getSupabase();
-    let currentPhotos = [...MEMORY_STATE.settings.schoolPhotos];
+    if (!supabase) return res.status(500).json({ success: false, message: "DB Error" });
 
-    if (supabase) {
-      const { data } = await supabase.from("school_settings").select("school_photos").eq("id", "current_settings").maybeSingle();
-      if (data && Array.isArray(data.school_photos) && data.school_photos.length > 0) {
-        currentPhotos = data.school_photos;
-      }
-      currentPhotos.unshift(newPhoto);
-
-      await supabase.from("school_settings").upsert({
-        id: "current_settings",
-        school_photos: currentPhotos,
-        updated_at: new Date().toISOString(),
-      });
-    } else {
-      currentPhotos.unshift(newPhoto);
+    let currentPhotos = [];
+    const { data } = await supabase.from("school_settings").select("school_photos").eq("id", "current_settings").maybeSingle();
+    if (data && Array.isArray(data.school_photos)) {
+      currentPhotos = data.school_photos;
     }
+    currentPhotos.unshift(newPhoto);
 
-    MEMORY_STATE.settings.schoolPhotos = currentPhotos;
+    await supabase.from("school_settings").upsert({
+      id: "current_settings",
+      school_photos: currentPhotos,
+      updated_at: new Date().toISOString(),
+    });
+
     return res.status(201).json({ success: true, message: "تمت إضافة الصورة بنجاح للمعرض.", photo: newPhoto });
   }
 
@@ -507,23 +454,22 @@ export class AdminController {
     if (!photoId) return res.status(400).json({ success: false, message: "معرف الصورة مطلوب." });
 
     const supabase = getSupabase();
-    let currentPhotos = MEMORY_STATE.settings.schoolPhotos;
+    if (!supabase) return res.status(500).json({ success: false, message: "DB Error" });
 
-    if (supabase) {
-      const { data } = await supabase.from("school_settings").select("school_photos").eq("id", "current_settings").maybeSingle();
-      if (data && Array.isArray(data.school_photos)) currentPhotos = data.school_photos;
-      currentPhotos = currentPhotos.filter((p) => p.id !== photoId);
-
-      await supabase.from("school_settings").upsert({
-        id: "current_settings",
-        school_photos: currentPhotos,
-        updated_at: new Date().toISOString(),
-      });
-    } else {
-      currentPhotos = currentPhotos.filter((p) => p.id !== photoId);
+    const { data } = await supabase.from("school_settings").select("school_photos").eq("id", "current_settings").maybeSingle();
+    let currentPhotos = [];
+    if (data && Array.isArray(data.school_photos)) {
+      currentPhotos = data.school_photos;
     }
+    
+    currentPhotos = currentPhotos.filter((p) => p.id !== photoId);
 
-    MEMORY_STATE.settings.schoolPhotos = currentPhotos;
+    await supabase.from("school_settings").upsert({
+      id: "current_settings",
+      school_photos: currentPhotos,
+      updated_at: new Date().toISOString(),
+    });
+
     return res.status(200).json({ success: true, message: "تم حذف الصورة من المعرض بنجاح." });
   }
 }

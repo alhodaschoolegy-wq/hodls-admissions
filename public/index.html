@@ -141,28 +141,28 @@
 
         <!-- Filter Category Tabs -->
         <div class="gallery-filter-tabs" id="galleryFilterTabs">
-          <button class="gallery-filter-btn active" data-category="all" onclick="filterSchoolGallery('all')">
+          <button class="gallery-filter-btn active" data-category="all" data-action="filter-gallery">
             <i class="fa-solid fa-border-all"></i> جميع الأقسام والمرافق
           </button>
-          <button class="gallery-filter-btn" data-category="المباني والمرافق" onclick="filterSchoolGallery('المباني والمرافق')">
+          <button class="gallery-filter-btn" data-category="المباني والمرافق" data-action="filter-gallery">
             <i class="fa-solid fa-building"></i> المباني والفناء
           </button>
-          <button class="gallery-filter-btn" data-category="المعامل التكنولوجية" onclick="filterSchoolGallery('المعامل التكنولوجية')">
+          <button class="gallery-filter-btn" data-category="المعامل التكنولوجية" data-action="filter-gallery">
             <i class="fa-solid fa-laptop-code"></i> المعامل والعلوم
           </button>
-          <button class="gallery-filter-btn" data-category="الفصول الدراسية" onclick="filterSchoolGallery('الفصول الدراسية')">
+          <button class="gallery-filter-btn" data-category="الفصول الدراسية" data-action="filter-gallery">
             <i class="fa-solid fa-chalkboard-user"></i> الفصول الذكية
           </button>
-          <button class="gallery-filter-btn" data-category="رياض الأطفال" onclick="filterSchoolGallery('رياض الأطفال')">
+          <button class="gallery-filter-btn" data-category="رياض الأطفال" data-action="filter-gallery">
             <i class="fa-solid fa-shapes"></i> رياض الأطفال (KG)
           </button>
-          <button class="gallery-filter-btn" data-category="الأنشطة والملاعب" onclick="filterSchoolGallery('الأنشطة والملاعب')">
+          <button class="gallery-filter-btn" data-category="الأنشطة والملاعب" data-action="filter-gallery">
             <i class="fa-solid fa-futbol"></i> الملاعب والرياضة
           </button>
-          <button class="gallery-filter-btn" data-category="المسرح والفعاليات" onclick="filterSchoolGallery('المسرح والفعاليات')">
+          <button class="gallery-filter-btn" data-category="المسرح والفعاليات" data-action="filter-gallery">
             <i class="fa-solid fa-masks-theater"></i> المسرح والفعاليات
           </button>
-          <button class="gallery-filter-btn" data-category="المكتبة والثقافة" onclick="filterSchoolGallery('المكتبة والثقافة')">
+          <button class="gallery-filter-btn" data-category="المكتبة والثقافة" data-action="filter-gallery">
             <i class="fa-solid fa-book-bookmark"></i> المكتبة والبحث
           </button>
         </div>
@@ -170,15 +170,15 @@
 
         <!-- Gallery Grid -->
         <div class="gallery-grid" id="schoolPhotosGalleryGrid">
-          <!-- Dynamic photo cards loaded via app.js -->
+          <!-- Dynamic photo cards loaded via JS -->
         </div>
       </div>
     </section>
 
     <!-- Photo Lightbox Modal -->
-    <div class="photo-lightbox-modal" id="photoLightboxModal" onclick="closePhotoLightbox(event)">
-      <div class="photo-lightbox-content" onclick="event.stopPropagation()">
-        <button class="photo-lightbox-close" onclick="closePhotoLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="photo-lightbox-modal" id="photoLightboxModal" data-action="close-lightbox">
+      <div class="photo-lightbox-content">
+        <button class="photo-lightbox-close" data-action="close-lightbox"><i class="fa-solid fa-xmark"></i></button>
         <img id="lightboxImg" src="" alt="معاينة الصورة">
         <div class="photo-lightbox-info">
           <h3 id="lightboxTitle"></h3>
@@ -246,7 +246,7 @@
 
           <!-- Wizard Body Form -->
           <div class="wizard-body">
-            <form id="registrationForm" onsubmit="event.preventDefault(); return false;" novalidate>
+            <form id="registrationForm" novalidate>
               
               <!-- Anti-Bot Honeypot Field (Hidden from humans) -->
               <input type="text" id="website_url" name="website_url" style="display:none !important;" tabindex="-1" autocomplete="off">
@@ -496,12 +496,12 @@
             <small id="parentEditAppIdBadge" class="badge acceptedInitial" style="font-size:11px;">HODLS-2026-XXXXX</small>
           </div>
         </div>
-        <button type="button" class="btn btn-outline btn-sm" onclick="closeParentEditModal()" style="border-radius:50%; width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <button type="button" class="btn btn-outline btn-sm" data-action="close-parent-edit" style="border-radius:50%; width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <form id="parentEditForm" onsubmit="handleParentEditSubmit(event)">
+      <form id="parentEditForm">
         <div class="form-grid" style="grid-template-columns:repeat(2, 1fr); gap:12px;">
           <div class="form-group form-group-full">
             <label for="pEdit_studentName"><span class="req">*</span> <i class="fa-solid fa-user"></i> اسم الطالب رباعياً</label>
@@ -510,7 +510,7 @@
 
           <div class="form-group">
             <label for="pEdit_stage"><span class="req">*</span> <i class="fa-solid fa-school"></i> المرحلة الدراسية</label>
-            <select id="pEdit_stage" class="form-control" required onchange="handleParentStageChange()">
+            <select id="pEdit_stage" class="form-control" required>
               <option value="المرحلة الابتدائية">المرحلة الابتدائية</option>
               <option value="المرحلة الإعدادية">المرحلة الإعدادية</option>
               <option value="المرحلة الثانوية">المرحلة الثانوية</option>
@@ -583,7 +583,7 @@
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #e2e8f0; padding-top:16px;">
-          <button type="button" class="btn btn-outline" onclick="closeParentEditModal()">إلغاء</button>
+          <button type="button" class="btn btn-outline" data-action="close-parent-edit">إلغاء</button>
           <button type="submit" class="btn btn-primary" id="btnSaveParentEdit">
             <i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات
           </button>
@@ -633,7 +633,7 @@
   <!-- High-Precision Client-side PDF Generation Engine -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- Robust Standalone JS Bundle -->
-  <script src="./assets/js/app.js"></script>
+  <!-- Main Application Entry Point -->
+  <script type="module" src="./assets/js/main.js"></script>
 </body>
 </html>

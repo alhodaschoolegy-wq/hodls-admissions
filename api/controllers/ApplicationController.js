@@ -1,4 +1,4 @@
-import { getSupabase, MEMORY_STATE } from "../utils/db.js";
+import { getSupabase } from "../utils/db.js";
 import { parseEgyptianNationalId } from "../utils/nationalId.js";
 import { clean, checkRateLimit, getClientIp } from "../utils/security.js";
 
@@ -11,7 +11,7 @@ export class ApplicationController {
    */
   static async submit(req, res, body) {
     const ip = getClientIp(req);
-    const rate = checkRateLimit(`submit_${ip}`, 10, 10 * 60 * 1000);
+    const rate = await checkRateLimit(`submit_${ip}`, 10, 10 * 60 * 1000);
     if (!rate.allowed) {
       return res.status(429).json({
         success: false,
@@ -62,32 +62,24 @@ export class ApplicationController {
     const nationalId = nidInfo.nationalId;
     const supabase = getSupabase();
 
+    if (!supabase) {
+      return res.status(500).json({ success: false, message: "قاعدة البيانات غير متاحة حالياً." });
+    }
+
     // Check duplicate National ID
-    if (supabase) {
-      const { data: existing } = await supabase.from("applications").select("application_id").eq("national_id", nationalId).maybeSingle();
-      if (existing) {
-        return res.status(409).json({
-          success: false,
-          duplicate: true,
-          applicationId: existing.application_id,
-          message: `هذا الرقم القومي مسجل بالفعل بالطلب رقم (${existing.application_id}).`,
-        });
-      }
-    } else {
-      const existing = MEMORY_STATE.applications.find((a) => a.nationalId === nationalId);
-      if (existing) {
-        return res.status(409).json({
-          success: false,
-          duplicate: true,
-          applicationId: existing.applicationId,
-          message: `هذا الرقم القومي مسجل بالفعل بالطلب رقم (${existing.applicationId}).`,
-        });
-      }
+    const { data: existing } = await supabase.from("applications").select("application_id").eq("national_id", nationalId).maybeSingle();
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        duplicate: true,
+        applicationId: existing.application_id,
+        message: `هذا الرقم القومي مسجل بالفعل بالطلب رقم (${existing.application_id}).`,
+      });
     }
 
     // Generate Application ID
-    const count = supabase ? (await supabase.from("applications").select("id", { count: "exact", head: true })).count || 0 : MEMORY_STATE.applications.length;
-    const nextNum = (count + 1).toString().padStart(5, "0");
+    const { count } = await supabase.from("applications").select("id", { count: "exact", head: true });
+    const nextNum = ((count || 0) + 1).toString().padStart(5, "0");
     const applicationId = `HODLS-2026-${nextNum}`;
 
     const newApp = {
@@ -117,41 +109,11 @@ export class ApplicationController {
       updated_at: new Date().toISOString(),
     };
 
-    if (supabase) {
-      const { error } = await supabase.from("applications").insert([newApp]);
-      if (error) {
-        console.error("Supabase insert error:", error);
-        return res.status(500).json({ success: false, message: "فشل حفظ الطلب في قاعدة البيانات." });
-      }
+    const { error } = await supabase.from("applications").insert([newApp]);
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return res.status(500).json({ success: false, message: "فشل حفظ الطلب في قاعدة البيانات." });
     }
-
-    // Update memory fallback
-    MEMORY_STATE.applications.unshift({
-      id: count + 1,
-      applicationId,
-      studentName,
-      nationalId,
-      birthDate: nidInfo.birthDate,
-      governorate: nidInfo.governorate,
-      gender: nidInfo.gender,
-      ageOnOctober: nidInfo.ageOnOctober,
-      stage,
-      grade,
-      secondLanguage,
-      fatherName,
-      fatherJob: clean(body.fatherJob),
-      motherName,
-      motherJob: clean(body.motherJob),
-      guardianPhone,
-      guardianPhoneAlt: clean(body.guardianPhoneAlt),
-      email: clean(body.email).toLowerCase(),
-      address,
-      previousSchool: clean(body.previousSchool),
-      notes: clean(body.notes),
-      status: "قيد المراجعة",
-      adminNotes: "",
-      timestamp: newApp.created_at,
-    });
 
     return res.status(201).json({
       success: true,
@@ -188,25 +150,21 @@ export class ApplicationController {
     }
 
     const ip = getClientIp(req);
-    const rate = checkRateLimit(`status_${ip}`, 40, 60 * 1000);
+    const rate = await checkRateLimit(`status_${ip}`, 40, 60 * 1000);
     if (!rate.allowed) {
       return res.status(429).json({ found: false, message: "يرجى التمهل في إجراء عمليات البحث." });
     }
 
     const supabase = getSupabase();
-    let found = null;
-
-    if (supabase) {
-      let q = supabase.from("applications").select("*");
-      if (id) q = q.eq("application_id", id);
-      else if (nid) q = q.eq("national_id", nid);
-      const { data } = await q.maybeSingle();
-      found = data;
+    if (!supabase) {
+      return res.status(500).json({ found: false, message: "قاعدة البيانات غير متاحة." });
     }
 
-    if (!found) {
-      found = MEMORY_STATE.applications.find((a) => a.applicationId === id || a.nationalId === nid);
-    }
+    let q = supabase.from("applications").select("*");
+    if (id) q = q.eq("application_id", id);
+    else if (nid) q = q.eq("national_id", nid);
+    
+    const { data: found } = await q.maybeSingle();
 
     if (!found) {
       return res.status(200).json({ found: false, message: "لم يتم العثور على طلب مسجل بهذه البيانات." });
@@ -216,16 +174,14 @@ export class ApplicationController {
     const maskedPhone = rawPhone.length === 11 ? `${rawPhone.substring(0, 3)}****${rawPhone.substring(7)}` : rawPhone;
 
     // Check Parent Edit Grace Period Status
-    let currentSettings = { ...MEMORY_STATE.settings };
-    if (supabase) {
-      const { data: st } = await supabase.from("school_settings").select("parent_edits_enabled, parent_edit_deadline").eq("id", "current_settings").maybeSingle();
-      if (st) {
-        if (st.parent_edits_enabled !== undefined) currentSettings.parentEditsEnabled = Boolean(st.parent_edits_enabled);
-        if (st.parent_edit_deadline) currentSettings.parentEditDeadline = st.parent_edit_deadline;
-      }
+    let currentSettings = { parentEditsEnabled: true, parentEditDeadline: "2026-08-31T23:59:59Z" };
+    const { data: st } = await supabase.from("school_settings").select("parent_edits_enabled, parent_edit_deadline").eq("id", "current_settings").maybeSingle();
+    if (st) {
+      if (st.parent_edits_enabled !== null) currentSettings.parentEditsEnabled = Boolean(st.parent_edits_enabled);
+      if (st.parent_edit_deadline) currentSettings.parentEditDeadline = st.parent_edit_deadline;
     }
 
-    const deadlineTime = new Date(currentSettings.parentEditDeadline || "2026-08-31T23:59:59Z").getTime();
+    const deadlineTime = new Date(currentSettings.parentEditDeadline).getTime();
     const remainingMs = deadlineTime - Date.now();
     const remainingDays = Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60 * 24)));
     const isExpired = remainingMs <= 0;
@@ -272,24 +228,25 @@ export class ApplicationController {
    */
   static async parentUpdate(req, res, body) {
     const ip = getClientIp(req);
-    const rate = checkRateLimit(`parent_edit_${ip}`, 15, 10 * 60 * 1000);
+    const rate = await checkRateLimit(`parent_edit_${ip}`, 15, 10 * 60 * 1000);
     if (!rate.allowed) {
       return res.status(429).json({ success: false, message: "تم إرسال عدد كبير من الطلبات. يرجى الانتظار." });
     }
 
     const supabase = getSupabase();
-
-    // 1. Verify Grace Period Status
-    let currentSettings = { ...MEMORY_STATE.settings };
-    if (supabase) {
-      const { data: st } = await supabase.from("school_settings").select("parent_edits_enabled, parent_edit_deadline").eq("id", "current_settings").maybeSingle();
-      if (st) {
-        if (st.parent_edits_enabled !== undefined) currentSettings.parentEditsEnabled = Boolean(st.parent_edits_enabled);
-        if (st.parent_edit_deadline) currentSettings.parentEditDeadline = st.parent_edit_deadline;
-      }
+    if (!supabase) {
+      return res.status(500).json({ success: false, message: "قاعدة البيانات غير متاحة." });
     }
 
-    const deadlineTime = new Date(currentSettings.parentEditDeadline || "2026-08-31T23:59:59Z").getTime();
+    // 1. Verify Grace Period Status
+    let currentSettings = { parentEditsEnabled: true, parentEditDeadline: "2026-08-31T23:59:59Z" };
+    const { data: st } = await supabase.from("school_settings").select("parent_edits_enabled, parent_edit_deadline").eq("id", "current_settings").maybeSingle();
+    if (st) {
+      if (st.parent_edits_enabled !== null) currentSettings.parentEditsEnabled = Boolean(st.parent_edits_enabled);
+      if (st.parent_edit_deadline) currentSettings.parentEditDeadline = st.parent_edit_deadline;
+    }
+
+    const deadlineTime = new Date(currentSettings.parentEditDeadline).getTime();
     const remainingMs = deadlineTime - Date.now();
     const isExpired = remainingMs <= 0;
     const canParentEdit = Boolean(currentSettings.parentEditsEnabled) && !isExpired;
@@ -309,15 +266,7 @@ export class ApplicationController {
       return res.status(400).json({ success: false, message: "رقم الطلب والرقم القومي مطلوبان للتحقق من هوية صاحب الطلب." });
     }
 
-    let existingApp = null;
-    if (supabase) {
-      const { data } = await supabase.from("applications").select("*").eq("application_id", appId).eq("national_id", nationalId).maybeSingle();
-      existingApp = data;
-    }
-
-    if (!existingApp) {
-      existingApp = MEMORY_STATE.applications.find((a) => a.applicationId === appId && a.nationalId === nationalId);
-    }
+    const { data: existingApp } = await supabase.from("applications").select("*").eq("application_id", appId).eq("national_id", nationalId).maybeSingle();
 
     if (!existingApp) {
       return res.status(404).json({ success: false, message: "بيانات التحقق غير مطابقة لأي طلب مسجل." });
@@ -352,30 +301,9 @@ export class ApplicationController {
     if (body.notes !== undefined) updateData.notes = clean(body.notes);
     updateData.updated_at = new Date().toISOString();
 
-    if (supabase) {
-      const { error } = await supabase.from("applications").update(updateData).eq("application_id", appId);
-      if (error) {
-        return res.status(500).json({ success: false, message: "فشل حفظ التعديلات: " + error.message });
-      }
-    }
-
-    // Update memory cache
-    const item = MEMORY_STATE.applications.find((a) => a.applicationId === appId);
-    if (item) {
-      if (updateData.student_name) item.studentName = updateData.student_name;
-      if (updateData.stage) item.stage = updateData.stage;
-      if (updateData.grade) item.grade = updateData.grade;
-      if (updateData.second_language) item.secondLanguage = updateData.second_language;
-      if (updateData.father_name) item.fatherName = updateData.father_name;
-      if (updateData.father_job !== undefined) item.fatherJob = updateData.father_job;
-      if (updateData.mother_name) item.motherName = updateData.mother_name;
-      if (updateData.mother_job !== undefined) item.motherJob = updateData.mother_job;
-      if (updateData.guardian_phone) item.guardianPhone = updateData.guardian_phone;
-      if (updateData.guardian_phone_alt !== undefined) item.guardianPhoneAlt = updateData.guardian_phone_alt;
-      if (updateData.email !== undefined) item.email = updateData.email;
-      if (updateData.address) item.address = updateData.address;
-      if (updateData.previous_school !== undefined) item.previousSchool = updateData.previous_school;
-      if (updateData.notes !== undefined) item.notes = updateData.notes;
+    const { error } = await supabase.from("applications").update(updateData).eq("application_id", appId);
+    if (error) {
+      return res.status(500).json({ success: false, message: "فشل حفظ التعديلات: " + error.message });
     }
 
     return res.status(200).json({
@@ -390,7 +318,7 @@ export class ApplicationController {
    */
   static async stats(req, res) {
     const supabase = getSupabase();
-    let apps = MEMORY_STATE.applications;
+    let apps = [];
 
     if (supabase) {
       const { data } = await supabase.from("applications").select("*");
@@ -422,7 +350,7 @@ export class ApplicationController {
    */
   static async list(req, res) {
     const supabase = getSupabase();
-    let apps = MEMORY_STATE.applications;
+    let apps = [];
 
     if (supabase) {
       const { data } = await supabase.from("applications").select("*").order("created_at", { ascending: false });
@@ -497,28 +425,8 @@ export class ApplicationController {
         console.error("Supabase update error:", error);
         return res.status(500).json({ success: false, message: "فشل الحفظ في قاعدة البيانات: " + error.message });
       }
-    }
-
-    const item = MEMORY_STATE.applications.find((a) => a.applicationId === id || String(a.id) === id);
-    if (item) {
-      if (body.studentName) item.studentName = clean(body.studentName);
-      if (body.nationalId) item.nationalId = clean(body.nationalId);
-      if (body.stage) item.stage = clean(body.stage);
-      if (body.grade) item.grade = clean(body.grade);
-      if (body.secondLanguage !== undefined) item.secondLanguage = clean(body.secondLanguage);
-      if (body.birthDate) item.birthDate = clean(body.birthDate);
-      if (body.fatherName) item.fatherName = clean(body.fatherName);
-      if (body.fatherJob !== undefined) item.fatherJob = clean(body.fatherJob);
-      if (body.motherName) item.motherName = clean(body.motherName);
-      if (body.motherJob !== undefined) item.motherJob = clean(body.motherJob);
-      if (body.guardianPhone) item.guardianPhone = clean(body.guardianPhone);
-      if (body.guardianPhoneAlt !== undefined) item.guardianPhoneAlt = clean(body.guardianPhoneAlt);
-      if (body.email !== undefined) item.email = clean(body.email);
-      if (body.address) item.address = clean(body.address);
-      if (body.previousSchool !== undefined) item.previousSchool = clean(body.previousSchool);
-      if (body.notes !== undefined) item.notes = clean(body.notes);
-      if (body.status) item.status = clean(body.status);
-      if (body.adminNotes !== undefined) item.adminNotes = clean(body.adminNotes);
+    } else {
+      return res.status(500).json({ success: false, message: "قاعدة البيانات غير متاحة." });
     }
 
     return res.status(200).json({ success: true, message: "تم تحديث وحفظ بيانات الطالب بنجاح." });
@@ -541,9 +449,10 @@ export class ApplicationController {
         console.error("Supabase delete error:", error);
         return res.status(500).json({ success: false, message: "فشل الحذف من قاعدة البيانات: " + error.message });
       }
+    } else {
+      return res.status(500).json({ success: false, message: "قاعدة البيانات غير متاحة." });
     }
 
-    MEMORY_STATE.applications = MEMORY_STATE.applications.filter((a) => a.applicationId !== id && String(a.id) !== id);
     return res.status(200).json({ success: true, message: "تم حذف ملف الطالب بنجاح." });
   }
 
@@ -551,7 +460,7 @@ export class ApplicationController {
    * Export applications to Arabic UTF-8 CSV
    */
   static async exportCsv(req, res) {
-    let apps = MEMORY_STATE.applications;
+    let apps = [];
     const supabase = getSupabase();
     if (supabase) {
       const { data } = await supabase.from("applications").select("*").order("created_at", { ascending: false });
