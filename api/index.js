@@ -39,7 +39,8 @@ function handleCors(req, res) {
 }
 
 /**
- * Main Serverless API Entry Point
+ * // Main API Gateway Serverless Function
+ * // Trigger redeploy
  */
 export default async function handler(req, res) {
   handleCors(req, res);

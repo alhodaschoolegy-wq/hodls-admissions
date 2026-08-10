@@ -1,0 +1,1 @@
+fetch('https://hodls-admissions.vercel.app/api/test').then(async r => { const d = await r.json(); console.log('KEYS:', Object.keys(d.env).filter(k => k.includes('NEXT_PUBLIC'))); }).catch(console.error);
