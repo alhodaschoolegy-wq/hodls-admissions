@@ -164,7 +164,7 @@ export const UI = {
     container.innerHTML = filtered.map((p) => `
       <div class="gallery-card" data-action="open-lightbox" data-payload="${p.id}">
         <div class="gallery-card-thumb-wrap">
-          <img src="${p.imageUrl}" alt="${p.title}" class="gallery-card-thumb" onerror="this.src='logo.png'">
+          <img src="${p.imageUrl}" alt="${p.title}" class="gallery-card-thumb" onerror="this.src='school-logo.png'">
           <span class="gallery-card-badge"><i class="fa-solid fa-tag"></i> ${p.category || "المدرسة"}</span>
           <div class="gallery-card-zoom-overlay">
             <i class="fa-solid fa-magnifying-glass-plus"></i>

@@ -24,7 +24,7 @@ export class ReceiptView {
         <!-- Receipt Header -->
         <div class="receipt-header">
             <div class="receipt-logo-wrap">
-              <img src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="شعار المدرسة" class="receipt-logo">
+              <img src="school-logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="شعار المدرسة" class="receipt-logo">
             </div>
           <div class="receipt-school-title">
             <h3>جمهورية مصر العربية — وزارة التربية والتعليم</h3>

@@ -292,7 +292,7 @@ export function generateDossierHtml(receipt) {
       </div>
 
       <div class="center-brand">
-        <img src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="شعار المدرسة">
+        <img src="school-logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="شعار المدرسة">
         <h2>استمارة تقديم إلكتروني رسمية</h2>
         <small>العام الدراسي 2026 / 2027</small>
       </div>
