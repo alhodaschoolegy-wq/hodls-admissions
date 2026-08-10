@@ -89,12 +89,18 @@ export const UI = {
   },
 
   updateRegistrationGracePeriod() {
+    const topBanner = document.getElementById("gracePeriodBanner");
+    const topBannerText = document.getElementById("gracePeriodText");
     const regBanner = document.getElementById("registrationGracePeriodNotice");
     const step5Box = document.getElementById("step5GracePeriodBox");
     const step5Text = document.getElementById("step5GracePeriodText");
 
-    if (regBanner) {
-      if (this.appSettings.canParentEdit) {
+    if (this.appSettings.canParentEdit) {
+      if (topBanner) {
+        topBanner.style.background = "linear-gradient(to left, #087a3c, #10b981)";
+        if (topBannerText) topBannerText.innerHTML = `فترة السماح بتعديل بيانات الطلب: <strong class="badge-active">متاحة</strong> (متبقي ${this.appSettings.remainingDays} يوم)`;
+      }
+      if (regBanner) {
         regBanner.style.display = "block";
         const deadlineDate = new Date(this.appSettings.parentEditDeadline || "2026-08-31T23:59:59Z");
         const dateFormatted = deadlineDate.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
@@ -111,7 +117,13 @@ export const UI = {
         if (step5Text) {
           step5Text.textContent = `اطمئن، يحق لولي الأمر تعديل أي من هذه البيانات لاحقاً برقم الطلب حتى ${dateFormatted} (متبقي ${this.appSettings.remainingDays} يوماً).`;
         }
-      } else {
+      }
+    } else {
+      if (topBanner) {
+        topBanner.style.background = "linear-gradient(to left, #64748b, #94a3b8)";
+        if (topBannerText) topBannerText.innerHTML = `فترة السماح بتعديل بيانات الطلب: <strong class="badge-active" style="background: #e2e8f0; color: #475569;">مغلقة</strong>`;
+      }
+      if (regBanner) {
         regBanner.style.display = "block";
         regBanner.style.background = "rgba(100,116,139,0.08)";
         regBanner.style.borderColor = "rgba(100,116,139,0.25)";
