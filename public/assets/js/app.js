@@ -545,7 +545,7 @@
         if (badge) {
           badge.style.display = "block";
           badge.className = "nid-badge invalid";
-          badge.innerHTML = `<div class="badge-head"><span class="badge-icon">⏳</span><strong>متبقي ${14 - val.length} أرقام لاكتمال الرقم القومي.</strong></div>`;
+          badge.innerHTML = `<div class="badge-head"><i class="fa-solid fa-clock text-amber" style="margin-left:4px;"></i><strong>متبقي ${14 - val.length} أرقام لاكتمال الرقم القومي.</strong></div>`;
         }
       } else {
         parsedNidData = null;
@@ -579,7 +579,7 @@
       const submitBtn = document.getElementById("btnSubmitForm");
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = 'جاري إرسال وتوثيق الطلب...';
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال وتوثيق الطلب...';
       }
 
       showAlert("جاري إرسال الطلب وحفظ البيانات في السجلات الرسمية...", "info");
@@ -600,7 +600,7 @@
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = 'تأكيد وإرسال طلب التقديم النهائي 🚀';
+          submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-left:6px;"></i> تأكيد وإرسال طلب التقديم النهائي';
         }
       }
     });
@@ -648,13 +648,13 @@
               </div>
               ${data.adminNotes ? `
                 <div class="tracking-admin-alert">
-                  <strong>📢 ملاحظات لجنة القبول:</strong>
+                  <strong><i class="fa-solid fa-bullhorn text-emerald" style="margin-left:6px;"></i> ملاحظات لجنة القبول:</strong>
                   <p>${data.adminNotes}</p>
                 </div>
               ` : ""}
               <div class="tracking-card-footer">
                 <small>رقم هاتف المتابعة المسجل: <span dir="ltr">${data.maskedPhone || "—"}</span></small>
-                <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">🖨️ طباعة الإفادة</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الإفادة</button>
               </div>
             </div>
           `;

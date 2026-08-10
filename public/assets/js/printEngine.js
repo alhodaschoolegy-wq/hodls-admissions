@@ -271,12 +271,13 @@ export function generateDossierHtml(receipt) {
       }
     }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 <body>
 
   <div class="no-print-toolbar">
-    <button class="btn-print" onclick="window.print()">🖨️ طباعة الآن (Print / PDF)</button>
-    <button class="btn-close" onclick="window.close()">إغلاق النافذة</button>
+    <button class="btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الآن (Print / PDF)</button>
+    <button class="btn-close" onclick="window.close()"><i class="fa-solid fa-xmark"></i> إغلاق النافذة</button>
   </div>
 
   <div class="a4-page">
@@ -385,7 +386,7 @@ export function generateDossierHtml(receipt) {
 
     <!-- Checklist -->
     <div class="checklist-box">
-      <h4>📋 الأوراق والمستندات المطلوبة للتقديم الورقي بالمدرسة:</h4>
+      <h4><i class="fa-solid fa-clipboard-list" style="color:#087a3c;"></i> الأوراق والمستندات المطلوبة للتقديم الورقي بالمدرسة:</h4>
       <div class="checklist-grid">
         <div class="check-item"><span class="checkbox-sq"></span> أصل شهادة الميلاد الكمبيوتر الحديثة + 3 صور.</div>
         <div class="check-item"><span class="checkbox-sq"></span> عدد 6 صور شخصية حديثة للطفل بخلفية بيضاء (4x6).</div>

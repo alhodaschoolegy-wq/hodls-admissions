@@ -73,7 +73,7 @@ export class TrackingView {
         ${data.adminNotes ? `
           <div class="tracking-admin-alert">
             <div class="admin-alert-head">
-              <span class="alert-icon">📢</span>
+              <i class="fa-solid fa-bullhorn text-emerald" style="margin-left:6px;"></i>
               <strong>ملاحظات لجنة القبول والتنسيق:</strong>
             </div>
             <p>${escape(data.adminNotes)}</p>
@@ -83,7 +83,7 @@ export class TrackingView {
         <div class="tracking-card-footer">
           <small>رقم هاتف المتابعة المسجل: <span dir="ltr">${escape(data.maskedPhone || "—")}</span></small>
           <button class="btn btn-outline btn-sm" onclick="window.print()">
-            🖨️ طباعة إفادة الحالة
+            <i class="fa-solid fa-print"></i> طباعة إفادة الحالة
           </button>
         </div>
       </div>
@@ -101,7 +101,7 @@ export class TrackingView {
 
     container.innerHTML = `
       <div class="alert-box alert-error">
-        <span class="alert-icon">⚠️</span>
+        <i class="fa-solid fa-triangle-exclamation text-red" style="font-size:18px; margin-left:8px;"></i>
         <div>${escape(message)}</div>
       </div>
     `;

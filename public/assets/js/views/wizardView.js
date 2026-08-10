@@ -64,7 +64,7 @@ export class WizardView {
     reviewContainer.innerHTML = `
       <div class="review-card">
         <div class="review-section">
-          <h4><span class="review-icon">🎓</span> المرحلة والصف الدراسي</h4>
+          <h4><i class="fa-solid fa-graduation-cap text-gold" style="margin-left:6px;"></i> المرحلة والصف الدراسي</h4>
           <div class="review-grid">
             <div class="review-item"><label>المرحلة:</label><strong>${escape(data.stage)}</strong></div>
             <div class="review-item"><label>الصف:</label><strong>${escape(data.grade)}</strong></div>
@@ -73,7 +73,7 @@ export class WizardView {
         </div>
 
         <div class="review-section">
-          <h4><span class="review-icon">👤</span> بيانات الطالب</h4>
+          <h4><i class="fa-solid fa-user text-emerald" style="margin-left:6px;"></i> بيانات الطالب</h4>
           <div class="review-grid">
             <div class="review-item full"><label>الاسم بالكامل:</label><strong>${escape(data.studentName)}</strong></div>
             <div class="review-item"><label>الرقم القومي:</label><strong>${escape(data.nationalId)}</strong></div>
@@ -85,7 +85,7 @@ export class WizardView {
         </div>
 
         <div class="review-section">
-          <h4><span class="review-icon">👨‍👩‍👦</span> بيانات ولي الأمر والاتصال</h4>
+          <h4><i class="fa-solid fa-users text-gold" style="margin-left:6px;"></i> بيانات ولي الأمر والاتصال</h4>
           <div class="review-grid">
             <div class="review-item"><label>اسم الأب:</label><strong>${escape(data.fatherName)}</strong></div>
             <div class="review-item"><label>وظيفة الأب:</label><strong>${escape(data.fatherJob || "—")}</strong></div>
@@ -98,7 +98,7 @@ export class WizardView {
         </div>
 
         <div class="review-section">
-          <h4><span class="review-icon">📍</span> العنوان والبيانات الإضافية</h4>
+          <h4><i class="fa-solid fa-location-dot text-emerald" style="margin-left:6px;"></i> العنوان والبيانات الإضافية</h4>
           <div class="review-grid">
             <div class="review-item full"><label>العنوان بالتفصيل:</label><strong>${escape(data.address)}</strong></div>
             <div class="review-item"><label>المدرسة السابقة:</label><strong>${escape(data.previousSchool || "—")}</strong></div>

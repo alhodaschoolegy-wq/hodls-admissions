@@ -131,7 +131,7 @@ export class ReceiptView {
       <!-- Action Buttons (Hidden on Print) -->
       <div class="receipt-actions-bar no-print">
         <button class="btn btn-gold btn-large" onclick="window.print()">
-          <span class="btn-icon">🖨️</span> طباعة الاستمارة الرسمية (PDF)
+          <i class="fa-solid fa-print" style="margin-left:6px;"></i> طباعة الاستمارة الرسمية (PDF)
         </button>
         <button class="btn btn-outline btn-large" onclick="ReceiptView.closeReceipt()">
           إغلاق ومتابعة

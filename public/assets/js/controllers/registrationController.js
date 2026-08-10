@@ -246,7 +246,7 @@ export class RegistrationController {
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = 'تأكيد وإرسال طلب التقديم النهائي 🚀';
+        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-left:6px;"></i> تأكيد وإرسال طلب التقديم النهائي';
       }
     }
   }
