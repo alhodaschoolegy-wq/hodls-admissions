@@ -237,14 +237,11 @@
           <!-- Helpful Instructions Alert -->
           <div style="background:#fffdf5; border:1px solid #e8dbad; border-radius:8px; padding:10px 14px; font-size:12px; color:#684f04; line-height:1.5; margin-bottom:24px; text-align:right;">
             <i class="fa-solid fa-circle-info" style="color:#c9a227; margin-left:4px;"></i>
-            <strong>ملاحظة هامة:</strong> احتفظ برقم الطلب للتحقق من نتيجة التنسيق، ومواعيد المقابلات الشخصية، واستكمال الملف الورقي فور إعلان النتائج من خلال قسم <strong>"متابعة حالة الطلب"</strong>.
+            <strong>ملاحظة هامة:</strong> تم استلام طلبك بنجاح وحالته الحالية <strong>قيد المراجعة</strong>. احتفظ برقم الطلب لمتابعة التنسيق، وستتاح طباعة إفادة واستمارة القبول فور اعتماد حالة <strong>"مقبول نهائياً"</strong> عبر بوابة <strong>"متابعة حالة الطلب"</strong>.
           </div>
 
           <!-- Action Buttons -->
           <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button type="button" class="btn btn-gold btn-large" onclick="openStudentPrintDossier('${receipt.applicationId}')" style="font-weight:800; font-size:14px; flex:1; min-width:200px;">
-              <i class="fa-solid fa-print"></i> طباعة / تحميل الاستمارة (PDF)
-            </button>
             <button type="button" class="btn btn-primary btn-large" id="btnGoToTracking" style="background:#087a3c; border-color:#087a3c; font-weight:800; font-size:14px; flex:1; min-width:200px;">
               <i class="fa-solid fa-magnifying-glass"></i> متابعة حالة الطلب الآن
             </button>
@@ -678,8 +675,38 @@
             `;
           }
 
+          const isFinallyAccepted = data.status === "مقبول نهائياً" || data.status === "مقبول";
+
+          let acceptedCongratulationBanner = "";
+          let printActionButton = "";
+
+          if (isFinallyAccepted) {
+            acceptedCongratulationBanner = `
+              <div class="alert-box" style="display:flex; align-items:center; gap:12px; margin-bottom:14px; background:rgba(8,122,60,0.1); border:1.5px solid #087a3c; color:#04381e; padding:12px 16px; border-radius:10px;">
+                <i class="fa-solid fa-award text-emerald" style="font-size:24px;"></i>
+                <div>
+                  <strong style="display:block; font-size:14px;">🎉 تهانينا! تم اعتماد قبول الطالب نهائياً بمدرسة الهُدى الرسمية للغات.</strong>
+                  <span style="font-size:12px; color:#2d503b;">تم فتح إمكانية طباعة إفادة واستمارة القبول النهائي لتقديم الملف الورقي للمدرسة.</span>
+                </div>
+              </div>
+            `;
+            printActionButton = `
+              <button type="button" class="btn btn-gold btn-sm" onclick="openStudentPrintDossier('${data.applicationId}')" style="font-weight:700; padding:8px 16px;">
+                <i class="fa-solid fa-print"></i> طباعة إفادة واستمارة القبول النهائي (PDF)
+              </button>
+            `;
+          } else {
+            printActionButton = `
+              <div style="font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-lock" style="font-size:11px;"></i>
+                <span>تتاح طباعة إفادة واستمارة القبول فور اعتماد حالة <strong>"مقبول نهائياً"</strong>.</span>
+              </div>
+            `;
+          }
+
           trackResult.innerHTML = `
             <div class="tracking-card">
+              ${acceptedCongratulationBanner}
               ${gracePeriodBanner}
               <div class="tracking-card-head">
                 <div>
@@ -695,11 +722,9 @@
                   <p>${data.adminNotes}</p>
                 </div>
               ` : ""}
-              <div class="tracking-card-footer">
+              <div class="tracking-card-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <small>رقم هاتف المتابعة المسجل: <span dir="ltr">${data.maskedPhone || "—"}</span></small>
-                <button type="button" class="btn btn-gold btn-sm" onclick="openStudentPrintDossier('${data.applicationId}')" style="font-weight:700;">
-                  <i class="fa-solid fa-print"></i> طباعة / تحميل الاستمارة الرسمية
-                </button>
+                ${printActionButton}
               </div>
             </div>
           `;
