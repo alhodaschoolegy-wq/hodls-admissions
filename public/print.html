@@ -454,8 +454,21 @@
       }
     } catch {}
 
+    let isDataLoaded = false;
+
+    function handleAutoActions() {
+      if (!isDataLoaded) return;
+      if (params.get("download") === "1") {
+        setTimeout(() => { downloadPdfDossier(); }, 300);
+      } else if (params.get("autoprint") === "1") {
+        setTimeout(() => { window.print(); }, 300);
+      }
+    }
+
     if (fromAdmin) {
       renderStudentToDossier(fromAdmin);
+      isDataLoaded = true;
+      handleAutoActions();
     }
 
     // 2. Fetch fresh real data from API for the specific student ID
@@ -465,6 +478,10 @@
         .then((res) => {
           if (res && res.found) {
             renderStudentToDossier(res);
+            isDataLoaded = true;
+            if (!fromAdmin) {
+              handleAutoActions();
+            }
           }
         })
         .catch((err) => console.warn("API fetch error on print page:", err));
@@ -517,13 +534,6 @@
         }
       }
     };
-
-    // Auto-download PDF or Print if requested
-    if (params.get("download") === "1") {
-      setTimeout(() => { downloadPdfDossier(); }, 600);
-    } else if (params.get("autoprint") === "1") {
-      setTimeout(() => { window.print(); }, 400);
-    }
   </script>
 </body>
 </html>

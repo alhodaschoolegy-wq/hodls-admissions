@@ -242,6 +242,9 @@
 
           <!-- Action Buttons -->
           <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button type="button" class="btn btn-gold btn-large" onclick="openStudentPrintDossier('${receipt.applicationId}')" style="font-weight:800; font-size:14px; flex:1; min-width:200px;">
+              <i class="fa-solid fa-print"></i> طباعة / تحميل الاستمارة (PDF)
+            </button>
             <button type="button" class="btn btn-primary btn-large" id="btnGoToTracking" style="background:#087a3c; border-color:#087a3c; font-weight:800; font-size:14px; flex:1; min-width:200px;">
               <i class="fa-solid fa-magnifying-glass"></i> متابعة حالة الطلب الآن
             </button>
@@ -694,7 +697,9 @@
               ` : ""}
               <div class="tracking-card-footer">
                 <small>رقم هاتف المتابعة المسجل: <span dir="ltr">${data.maskedPhone || "—"}</span></small>
-                <button type="button" class="btn btn-outline btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الإفادة</button>
+                <button type="button" class="btn btn-gold btn-sm" onclick="openStudentPrintDossier('${data.applicationId}')" style="font-weight:700;">
+                  <i class="fa-solid fa-print"></i> طباعة / تحميل الاستمارة الرسمية
+                </button>
               </div>
             </div>
           `;
@@ -708,6 +713,16 @@
         searchBtn.textContent = "بحث عن الطلب";
       }
     }
+
+    // Direct Dossier Print / PDF Handler
+    window.openStudentPrintDossier = function(appId) {
+      const data = window.currentTrackedStudent;
+      if (data) {
+        sessionStorage.setItem("hodls_print_student", JSON.stringify(data));
+      }
+      const targetId = appId || (data ? data.applicationId : "");
+      window.open(`print.html?id=${encodeURIComponent(targetId)}`, "_blank");
+    };
 
     // Parent Edit Modal Handlers
     window.openParentEditModal = function() {
