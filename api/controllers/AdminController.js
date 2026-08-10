@@ -267,16 +267,36 @@ export class AdminController {
       if (data) {
         currentSettings.academicYear = data.academic_year || currentSettings.academicYear;
         currentSettings.academicYearStart = data.academic_year_start || currentSettings.academicYearStart;
-        currentSettings.parentEditsEnabled = data.parent_edits_enabled !== undefined ? Boolean(data.parent_edits_enabled) : true;
+        // Explicit null check: if column exists in row, use its value; otherwise keep default
+        if (data.parent_edits_enabled !== null && data.parent_edits_enabled !== undefined) {
+          currentSettings.parentEditsEnabled = Boolean(data.parent_edits_enabled);
+        }
         currentSettings.parentEditDeadline = data.parent_edit_deadline || currentSettings.parentEditDeadline;
-        if (data.category_visibility) currentSettings.categoryVisibility = data.category_visibility;
-        if (data.section_visibility) currentSettings.sectionVisibility = data.section_visibility;
+        if (data.category_visibility && typeof data.category_visibility === "object") {
+          currentSettings.categoryVisibility = data.category_visibility;
+        }
+        if (data.section_visibility && typeof data.section_visibility === "object") {
+          currentSettings.sectionVisibility = data.section_visibility;
+        }
         if (Array.isArray(data.school_photos) && data.school_photos.length > 0) {
           currentSettings.schoolPhotos = data.school_photos;
         } else {
           // Sync default curated photos to Supabase in background
           supabase.from("school_settings").update({ school_photos: currentSettings.schoolPhotos }).eq("id", "current_settings").then(() => {}).catch(() => {});
         }
+      } else {
+        // No row yet — insert defaults so future saves work correctly
+        supabase.from("school_settings").upsert({
+          id: "current_settings",
+          academic_year: currentSettings.academicYear,
+          academic_year_start: currentSettings.academicYearStart,
+          parent_edits_enabled: currentSettings.parentEditsEnabled,
+          parent_edit_deadline: currentSettings.parentEditDeadline,
+          category_visibility: currentSettings.categoryVisibility,
+          section_visibility: currentSettings.sectionVisibility,
+          school_photos: currentSettings.schoolPhotos,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "id" }).then(() => {}).catch(() => {});
       }
     }
 
@@ -331,12 +351,15 @@ export class AdminController {
 
     const supabase = getSupabase();
     if (supabase) {
-      await supabase.from("school_settings").upsert({
+      const { error: upsertErr } = await supabase.from("school_settings").upsert({
         id: "current_settings",
         category_visibility: categoryVisibility,
         section_visibility: sectionVisibility,
         updated_at: new Date().toISOString(),
-      });
+      }, { onConflict: "id" });
+      if (upsertErr) {
+        console.error("[Supabase] updateCategoryVisibility error:", upsertErr);
+      }
     }
 
     MEMORY_STATE.settings.categoryVisibility = categoryVisibility;
@@ -363,12 +386,15 @@ export class AdminController {
 
     const supabase = getSupabase();
     if (supabase) {
-      await supabase.from("school_settings").upsert({
+      const { error: upsertErr } = await supabase.from("school_settings").upsert({
         id: "current_settings",
         parent_edits_enabled: parentEditsEnabled,
         parent_edit_deadline: parentEditDeadline,
         updated_at: new Date().toISOString(),
-      });
+      }, { onConflict: "id" });
+      if (upsertErr) {
+        console.error("[Supabase] updateParentEditSettings error:", upsertErr);
+      }
     }
 
     MEMORY_STATE.settings.parentEditsEnabled = parentEditsEnabled;

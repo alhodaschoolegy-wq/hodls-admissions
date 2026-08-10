@@ -141,31 +141,32 @@
 
         <!-- Filter Category Tabs -->
         <div class="gallery-filter-tabs" id="galleryFilterTabs">
-          <button class="gallery-filter-btn active" onclick="filterSchoolGallery('all')">
+          <button class="gallery-filter-btn active" data-category="all" onclick="filterSchoolGallery('all')">
             <i class="fa-solid fa-border-all"></i> جميع الأقسام والمرافق
           </button>
-          <button class="gallery-filter-btn" onclick="filterSchoolGallery('المباني والمرافق')">
+          <button class="gallery-filter-btn" data-category="المباني والمرافق" onclick="filterSchoolGallery('المباني والمرافق')">
             <i class="fa-solid fa-building"></i> المباني والفناء
           </button>
-          <button class="gallery-filter-btn" onclick="filterSchoolGallery('المعامل التكنولوجية')">
+          <button class="gallery-filter-btn" data-category="المعامل التكنولوجية" onclick="filterSchoolGallery('المعامل التكنولوجية')">
             <i class="fa-solid fa-laptop-code"></i> المعامل والعلوم
           </button>
-          <button class="gallery-filter-btn" onclick="filterSchoolGallery('الفصول الدراسية')">
+          <button class="gallery-filter-btn" data-category="الفصول الدراسية" onclick="filterSchoolGallery('الفصول الدراسية')">
             <i class="fa-solid fa-chalkboard-user"></i> الفصول الذكية
           </button>
-          <button class="gallery-filter-btn" onclick="filterSchoolGallery('رياض الأطفال')">
+          <button class="gallery-filter-btn" data-category="رياض الأطفال" onclick="filterSchoolGallery('رياض الأطفال')">
             <i class="fa-solid fa-shapes"></i> رياض الأطفال (KG)
           </button>
-          <button class="gallery-filter-btn" onclick="filterSchoolGallery('الأنشطة والملاعب')">
+          <button class="gallery-filter-btn" data-category="الأنشطة والملاعب" onclick="filterSchoolGallery('الأنشطة والملاعب')">
             <i class="fa-solid fa-futbol"></i> الملاعب والرياضة
           </button>
-          <button class="gallery-filter-btn" onclick="filterSchoolGallery('المسرح والفعاليات')">
+          <button class="gallery-filter-btn" data-category="المسرح والفعاليات" onclick="filterSchoolGallery('المسرح والفعاليات')">
             <i class="fa-solid fa-masks-theater"></i> المسرح والفعاليات
           </button>
-          <button class="gallery-filter-btn" onclick="filterSchoolGallery('المكتبة والثقافة')">
+          <button class="gallery-filter-btn" data-category="المكتبة والثقافة" onclick="filterSchoolGallery('المكتبة والثقافة')">
             <i class="fa-solid fa-book-bookmark"></i> المكتبة والبحث
           </button>
         </div>
+
 
         <!-- Gallery Grid -->
         <div class="gallery-grid" id="schoolPhotosGalleryGrid">

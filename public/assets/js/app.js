@@ -1014,15 +1014,17 @@
         });
 
         // Apply Gallery Category Visibility to Filter Tabs
+        // Uses data-category attribute for reliable matching
         if (appSettings.categoryVisibility) {
-          document.querySelectorAll(".gallery-filter-btn").forEach((btn) => {
-            const onclickAttr = btn.getAttribute("onclick") || "";
-            for (const [catName, isVisible] of Object.entries(appSettings.categoryVisibility)) {
-              if (onclickAttr.includes(`'${catName}'`)) {
-                btn.style.display = isVisible ? "" : "none";
-              }
+          document.querySelectorAll(".gallery-filter-btn[data-category]").forEach((btn) => {
+            const cat = btn.getAttribute("data-category");
+            if (cat && cat !== "all") {
+              const isVisible = appSettings.categoryVisibility[cat] !== false;
+              btn.style.display = isVisible ? "" : "none";
             }
           });
+          // Re-render gallery so hidden category photos are filtered out
+          window.renderSchoolPhotosGallery("all");
         }
 
         // Apply Section Visibility to Landing Page Sections & Nav Links
@@ -1099,13 +1101,6 @@
           }
         }
 
-        window.renderSchoolPhotosGallery("all");
-      } catch (err) {
-        console.error("Failed to load settings:", err);
-      }
-    }
-
-        window.renderSchoolPhotosGallery("all");
       } catch (err) {
         console.error("Failed to load settings:", err);
       }
