@@ -513,6 +513,9 @@
             <td><span class="badge ${badgeClass}">${icon} ${escapeHtml(a.status)}</span></td>
             <td>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn-details" style="background:#e8f4ec; color:#04381e; border:1px solid #c3e0cf;" onclick="printStudentById('${escapeHtml(a.applicationId)}')">
+                  <i class="fa-solid fa-print"></i> طباعة
+                </button>
                 <button class="btn-details" onclick="openDetailsModal('${escapeHtml(a.applicationId)}')">
                   <i class="fa-solid fa-pen-to-square"></i> تعديل
                 </button>
@@ -707,7 +710,16 @@
 
     function printStudentCard() {
       if (!selectedApp) return;
+      sessionStorage.setItem("hodls_print_student", JSON.stringify(selectedApp));
       window.open(`/print.html?id=${encodeURIComponent(selectedApp.applicationId)}`, '_blank');
+    }
+
+    function printStudentById(appId) {
+      const app = allApps.find((a) => a.applicationId === appId);
+      if (app) {
+        sessionStorage.setItem("hodls_print_student", JSON.stringify(app));
+      }
+      window.open(`/print.html?id=${encodeURIComponent(appId)}`, '_blank');
     }
 
     // Initialize Page

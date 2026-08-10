@@ -387,68 +387,93 @@
   </div>
 
   <script>
-    // Auto-populate data from URL parameters or localStorage
+    // Real Student Data Loader
     const params = new URLSearchParams(window.location.search);
-    const getParam = (k, fb = "—") => params.get(k) || fb;
+    const requestedId = (params.get("id") || params.get("applicationId") || "").trim();
 
-    let receiptData = null;
-    try {
-      const stored = sessionStorage.getItem("hodls_last_receipt");
-      if (stored) receiptData = JSON.parse(stored);
-    } catch {}
-
-    const data = receiptData || {
-      applicationId: getParam("id", "HODLS-2026-00001"),
-      studentName: getParam("studentName", "طالب تجريبي"),
-      nationalId: getParam("nationalId", "31910150102931"),
-      birthDate: getParam("birthDate", "2019-10-15"),
-      governorate: getParam("governorate", "الجيزة"),
-      gender: getParam("gender", "ذكر"),
-      ageText: getParam("ageText", "مستوفى السن"),
-      stage: getParam("stage", "المرحلة الابتدائية"),
-      grade: getParam("grade", "الصف الأول الابتدائي"),
-      secondLanguage: getParam("secondLanguage", "اللغة الفرنسية"),
-      fatherName: getParam("fatherName", "ولي أمر الطالب"),
-      fatherJob: getParam("fatherJob", "—"),
-      motherName: getParam("motherName", "—"),
-      motherJob: getParam("motherJob", "—"),
-      guardianPhone: getParam("guardianPhone", "01000000000"),
-      guardianPhoneAlt: getParam("guardianPhoneAlt", "—"),
-      address: getParam("address", "جمهورية مصر العربية"),
-      previousSchool: getParam("previousSchool", "—"),
-      email: getParam("email", "—"),
-      status: getParam("status", "قيد المراجعة"),
-      timestamp: getParam("timestamp", new Date().toISOString()),
-      academicYear: getParam("academicYear", "2026 / 2027")
+    let studentData = {
+      applicationId: requestedId || "HODLS-2026-XXXXX",
+      studentName: "جاري جلب البيانات الرسمية للطالب...",
+      nationalId: "—",
+      birthDate: "—",
+      governorate: "—",
+      gender: "—",
+      ageText: "—",
+      stage: "—",
+      grade: "—",
+      secondLanguage: "—",
+      fatherName: "—",
+      fatherJob: "—",
+      motherName: "—",
+      motherJob: "—",
+      guardianPhone: "—",
+      guardianPhoneAlt: "—",
+      address: "—",
+      previousSchool: "—",
+      email: "—",
+      status: "قيد المراجعة",
+      timestamp: new Date().toISOString(),
+      academicYear: "2026 / 2027"
     };
 
-    document.getElementById("dossierAppId").textContent = data.applicationId;
-    document.getElementById("dossierStudentName").textContent = data.studentName;
-    document.getElementById("dossierNid").textContent = data.nationalId;
-    document.getElementById("dossierNidCell").textContent = data.nationalId;
-    document.getElementById("dossierBirthDate").textContent = data.birthDate;
-    document.getElementById("dossierGender").textContent = data.gender;
-    document.getElementById("dossierGov").textContent = data.governorate || "الجيزة";
-    document.getElementById("dossierAge").textContent = data.ageText || data.ageOnOctober?.text || "مستوفى السن";
-    document.getElementById("dossierStageGrade").textContent = `${data.stage} — ${data.grade}`;
-    document.getElementById("dossierLanguage").textContent = data.secondLanguage;
-    document.getElementById("dossierFatherName").textContent = data.fatherName;
-    document.getElementById("dossierFatherJob").textContent = data.fatherJob || "—";
-    document.getElementById("dossierMotherName").textContent = data.motherName || "—";
-    document.getElementById("dossierMotherJob").textContent = data.motherJob || "—";
-    document.getElementById("dossierPhone").textContent = data.guardianPhone;
-    document.getElementById("dossierPhoneAlt").textContent = data.guardianPhoneAlt || "—";
-    document.getElementById("dossierAddress").textContent = data.address;
-    document.getElementById("dossierSchool").textContent = data.previousSchool || "—";
-    document.getElementById("dossierEmail").textContent = data.email || "—";
-    document.getElementById("dossierStatus").textContent = data.status || "قيد المراجعة";
-    document.getElementById("dossierDate").textContent = data.timestamp ? new Date(data.timestamp).toLocaleDateString("ar-EG") : new Date().toLocaleDateString("ar-EG");
-    if (data.academicYear) document.getElementById("dossierAcademicYear").textContent = `العام الدراسي ${data.academicYear}`;
+    function renderStudentToDossier(data) {
+      studentData = data;
+      document.getElementById("dossierAppId").textContent = data.applicationId || "—";
+      document.getElementById("dossierStudentName").textContent = data.studentName || "—";
+      document.getElementById("dossierNid").textContent = data.nationalId || "—";
+      document.getElementById("dossierNidCell").textContent = data.nationalId || "—";
+      document.getElementById("dossierBirthDate").textContent = data.birthDate || "—";
+      document.getElementById("dossierGender").textContent = data.gender || "—";
+      document.getElementById("dossierGov").textContent = data.governorate || "الجيزة";
+      document.getElementById("dossierAge").textContent = data.ageText || (data.ageOnOctober && data.ageOnOctober.text) || "مستوفى السن";
+      document.getElementById("dossierStageGrade").textContent = `${data.stage || ""} — ${data.grade || ""}`;
+      document.getElementById("dossierLanguage").textContent = data.secondLanguage || "—";
+      document.getElementById("dossierFatherName").textContent = data.fatherName || "—";
+      document.getElementById("dossierFatherJob").textContent = data.fatherJob || "—";
+      document.getElementById("dossierMotherName").textContent = data.motherName || "—";
+      document.getElementById("dossierMotherJob").textContent = data.motherJob || "—";
+      document.getElementById("dossierPhone").textContent = data.guardianPhone || "—";
+      document.getElementById("dossierPhoneAlt").textContent = data.guardianPhoneAlt || "—";
+      document.getElementById("dossierAddress").textContent = data.address || "—";
+      document.getElementById("dossierSchool").textContent = data.previousSchool || "—";
+      document.getElementById("dossierEmail").textContent = data.email || "—";
+      document.getElementById("dossierStatus").textContent = data.status || "قيد المراجعة";
+      document.getElementById("dossierDate").textContent = data.timestamp ? new Date(data.timestamp).toLocaleDateString("ar-EG") : new Date().toLocaleDateString("ar-EG");
+      if (data.academicYear) document.getElementById("dossierAcademicYear").textContent = `العام الدراسي ${data.academicYear}`;
+    }
+
+    // 1. Try reading from Admin session first for instant render
+    let fromAdmin = null;
+    try {
+      const stored = sessionStorage.getItem("hodls_print_student");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (!requestedId || parsed.applicationId === requestedId) {
+          fromAdmin = parsed;
+        }
+      }
+    } catch {}
+
+    if (fromAdmin) {
+      renderStudentToDossier(fromAdmin);
+    }
+
+    // 2. Fetch fresh real data from API for the specific student ID
+    if (requestedId) {
+      fetch(`/api?action=getApplicationStatus&id=${encodeURIComponent(requestedId)}`)
+        .then((res) => res.json())
+        .then((res) => {
+          if (res && res.found) {
+            renderStudentToDossier(res);
+          }
+        })
+        .catch((err) => console.warn("API fetch error on print page:", err));
+    }
 
     // PDF Download Function
     window.downloadPdfDossier = async function() {
       const element = document.getElementById("printableDossier");
-      const filename = `استمارة_تقديم_${data.applicationId || "HODLS"}_${(data.studentName || "").replace(/\s+/g, "_")}.pdf`;
+      const filename = `استمارة_تقديم_${studentData.applicationId || "HODLS"}_${(studentData.studentName || "").replace(/\s+/g, "_")}.pdf`;
       const btn = document.querySelector(".btn-download-pdf");
 
       if (btn) {
