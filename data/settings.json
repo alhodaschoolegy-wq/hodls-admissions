@@ -1,0 +1,42 @@
+{
+  "academicYear": "2026 / 2027",
+  "academicYearStart": 2026,
+  "schoolName": "مدرسة الهُدى الرسمية المتميزة للغات",
+  "schoolPhotos": [
+    {
+      "id": "photo-1786277102336",
+      "title": "المسرح المدرسي وقاعة الاحتفالات الكبرى",
+      "category": "المباني والمرافق",
+      "imageUrl": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
+      "createdAt": "2026-08-09T12:05:02.336Z"
+    },
+    {
+      "id": "photo-1",
+      "title": "المبنى المدرسي والفناء الرئيسي",
+      "category": "المباني والمرافق",
+      "imageUrl": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1200&q=80",
+      "createdAt": "2026-08-09T11:00:00.000Z"
+    },
+    {
+      "id": "photo-2",
+      "title": "معامل الحاسب الآلي والوسائط المتعددة",
+      "category": "المعامل التكنولوجية",
+      "imageUrl": "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80",
+      "createdAt": "2026-08-09T11:05:00.000Z"
+    },
+    {
+      "id": "photo-3",
+      "title": "الملاعب الرياضية ومساحات الأنشطة",
+      "category": "الأنشطة والملاعب",
+      "imageUrl": "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80",
+      "createdAt": "2026-08-09T11:10:00.000Z"
+    },
+    {
+      "id": "photo-4",
+      "title": "المكتبة المركزية وقاعات القراءة والاطلاع",
+      "category": "المكتبة والأنشطة",
+      "imageUrl": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80",
+      "createdAt": "2026-08-09T11:15:00.000Z"
+    }
+  ]
+}

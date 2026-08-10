@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استمارة تقديم رسمية - مدرسة الهُدى الرسمية للغات</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 4mm 6mm !important;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      background: #f1f5f3;
+      color: #111;
+      font-family: "IBM Plex Sans Arabic", "Cairo", sans-serif;
+      font-size: 10.5px;
+      line-height: 1.35;
+    }
+    @media screen {
+      body {
+        padding: 20px 10px 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .a4-page {
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      }
+    }
+    .a4-page {
+      width: 198mm;
+      min-height: 270mm;
+      max-height: 272mm;
+      margin: 0 auto;
+      border: 2px solid #04381e;
+      border-radius: 4px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .header-grid {
+      display: grid;
+      grid-template-columns: 1.3fr auto 1.2fr;
+      align-items: center;
+      border-bottom: 2px solid #04381e;
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+      text-align: center;
+      gap: 8px;
+    }
+    .ministry-info {
+      text-align: right;
+      font-size: 9.5px;
+      line-height: 1.35;
+    }
+    .ministry-info strong {
+      display: block;
+      font-size: 11px;
+      color: #04381e;
+    }
+    .center-brand img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+    }
+    .center-brand h2 {
+      font-size: 13px;
+      color: #04381e;
+      margin-top: 2px;
+      font-family: "Cairo", sans-serif;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .center-brand small {
+      color: #9e7b14;
+      font-weight: 800;
+      font-size: 9.5px;
+    }
+    .meta-info {
+      text-align: left;
+      font-size: 9.5px;
+      line-height: 1.35;
+    }
+    .app-badge {
+      display: inline-block;
+      background: #edf5f0;
+      border: 1px solid #087a3c;
+      color: #04381e;
+      font-weight: 900;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .banner-bar {
+      background: #f8faf9;
+      border: 1px solid #c9dcd1;
+      border-radius: 4px;
+      padding: 3px 8px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+    }
+    .banner-bar strong {
+      color: #04381e;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 6px;
+      font-size: 10px;
+    }
+    table.data-table th, table.data-table td {
+      border: 1px solid #7c9887;
+      padding: 3px 6px;
+      text-align: right;
+      line-height: 1.3;
+    }
+    table.data-table th {
+      background: #edf5f0;
+      color: #04381e;
+      font-weight: 800;
+      width: 18%;
+      white-space: nowrap;
+    }
+    table.data-table td strong {
+      color: #000;
+    }
+    .table-section-title {
+      background: #04381e !important;
+      color: #fff !important;
+      font-weight: 800;
+      font-size: 10.5px;
+      text-align: center !important;
+      padding: 2.5px !important;
+    }
+    .checklist-box {
+      border: 1px dashed #7c9887;
+      background: #fafcfb;
+      border-radius: 4px;
+      padding: 4px 7px;
+      margin-bottom: 5px;
+      font-size: 9px;
+      line-height: 1.3;
+    }
+    .checklist-box h4 {
+      font-size: 9.5px;
+      color: #04381e;
+      margin-bottom: 2px;
+    }
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px 8px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .checkbox-sq {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border: 1.2px solid #333;
+      border-radius: 2px;
+    }
+    .pledge-box {
+      font-size: 8.5px;
+      color: #222;
+      background: #fffdf5;
+      border: 1px solid #e8dbad;
+      border-radius: 4px;
+      padding: 3px 6px;
+      margin-bottom: 5px;
+      line-height: 1.3;
+    }
+    .signatures-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      text-align: center;
+      font-size: 9.5px;
+      padding-top: 2px;
+    }
+    .sig-col span {
+      font-weight: 800;
+      color: #04381e;
+    }
+    .sig-space {
+      height: 20px;
+      margin-top: 2px;
+      border-bottom: 1px dotted #888;
+    }
+    .stamp-circle {
+      border: 1.5px dashed #9e7b14;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #9e7b14;
+      font-size: 7.5px;
+      font-weight: 900;
+      transform: rotate(-6deg);
+    }
+    .no-print-toolbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #04381e;
+      padding: 10px 24px;
+      border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: flex;
+      gap: 14px;
+      z-index: 10000;
+    }
+    .btn-download-pdf {
+      background: #087a3c;
+      color: #fff;
+      border: 1px solid #10b981;
+      padding: 8px 24px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13.5px;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 12px rgba(8,122,60,0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-print {
+      background: #c9a227;
+      color: #fff;
+      border: 0;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13.5px;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 12px rgba(201,162,39,0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-close {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: 0;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    @media print {
+      .no-print-toolbar {
+        display: none !important;
+      }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+      }
+      .a4-page {
+        border: 2px solid #04381e !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 268mm !important;
+        max-height: 268mm !important;
+        margin: 0 auto !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="no-print-toolbar">
+    <button class="btn-download-pdf" onclick="downloadPdfDossier()">📥 تحميل الاستمارة PDF (Download)</button>
+    <button class="btn-print" onclick="window.print()">🖨️ طباعة الآن (Print)</button>
+    <button class="btn-close" onclick="window.close()">إغلاق</button>
+  </div>
+
+  <div class="a4-page" id="printableDossier">
+    <!-- Header -->
+    <div class="header-grid">
+      <div class="ministry-info">
+        <strong>جمهورية مصر العربية</strong>
+        <div>وزارة التربية والتعليم والتعليم الفني</div>
+        <div>مديرية التربية والتعليم</div>
+        <div>إدارة التعليم المتميز واللغات</div>
+        <strong>مدرسة الهُدى الرسمية المتميزة للغات</strong>
+      </div>
+      <div class="center-brand">
+        <img id="dossierLogo" src="logo.png" onerror="this.src='school-logo.svg';" alt="شعار المدرسة">
+        <h2>استمارة تقديم إلكتروني رسمية</h2>
+        <small id="dossierAcademicYear">العام الدراسي 2026 / 2027</small>
+      </div>
+      <div class="meta-info">
+        <div>رقم الطلب المعتمد:</div>
+        <div class="app-badge" id="dossierAppId">HODLS-2026-XXXXX</div>
+        <div style="margin-top:2px; font-size:8.5px; color:#444;">تاريخ التسجيل: <span id="dossierDate">—</span></div>
+        <div style="margin-top:1px; font-size:8.5px; color:#444;">حالة الطلب: <strong id="dossierStatus">قيد المراجعة</strong></div>
+      </div>
+    </div>
+
+    <div class="banner-bar">
+      <span><strong>ملف الالتحاق والتنسيق الإلكتروني المعتمد</strong></span>
+      <span>الرقم القومي للطالب: <strong id="dossierNid" dir="ltr">—</strong></span>
+    </div>
+
+    <!-- Table 1 -->
+    <table class="data-table">
+      <tr><th colspan="4" class="table-section-title">أولاً: بيانات الطالب والرغبة الدراسية</th></tr>
+      <tr><th>اسم الطالب رباعياً:</th><td colspan="3"><strong id="dossierStudentName">—</strong></td></tr>
+      <tr><th>الرقم القومي:</th><td><strong id="dossierNidCell" dir="ltr">—</strong></td><th>تاريخ الميلاد:</th><td><strong id="dossierBirthDate">—</strong></td></tr>
+      <tr><th>النوع:</th><td><strong id="dossierGender">—</strong></td><th>المحافظة:</th><td><strong id="dossierGov">—</strong></td></tr>
+      <tr><th>السن في 1 أكتوبر:</th><td><strong id="dossierAge">—</strong></td><th>المرحلة والصف:</th><td><strong id="dossierStageGrade">—</strong></td></tr>
+      <tr><th>اللغة الأجنبية الثانية:</th><td colspan="3"><strong id="dossierLanguage">—</strong></td></tr>
+    </table>
+
+    <!-- Table 2 -->
+    <table class="data-table">
+      <tr><th colspan="4" class="table-section-title">ثانياً: بيانات ولي الأمر والسكن</th></tr>
+      <tr><th>اسم الأب:</th><td><strong id="dossierFatherName">—</strong></td><th>وظيفة الأب:</th><td><strong id="dossierFatherJob">—</strong></td></tr>
+      <tr><th>اسم الأم:</th><td><strong id="dossierMotherName">—</strong></td><th>وظيفة الأم:</th><td><strong id="dossierMotherJob">—</strong></td></tr>
+      <tr><th>هاتف ولي الأمر:</th><td><strong id="dossierPhone" dir="ltr">—</strong></td><th>هاتف بديل:</th><td><strong id="dossierPhoneAlt" dir="ltr">—</strong></td></tr>
+      <tr><th>العنوان بالتفصيل:</th><td colspan="3"><strong id="dossierAddress">—</strong></td></tr>
+      <tr><th>المدرسة السابقة:</th><td><strong id="dossierSchool">—</strong></td><th>البريد الإلكتروني:</th><td><strong id="dossierEmail">—</strong></td></tr>
+    </table>
+
+    <!-- Checklist -->
+    <div class="checklist-box">
+      <h4>📋 الأوراق والمستندات المطلوبة للتقديم الورقي بالمدرسة:</h4>
+      <div class="checklist-grid">
+        <div class="check-item"><span class="checkbox-sq"></span> أصل شهادة الميلاد الكمبيوتر الحديثة + 3 صور.</div>
+        <div class="check-item"><span class="checkbox-sq"></span> عدد 6 صور شخصية حديثة للطفل بخلفية بيضاء (4x6).</div>
+        <div class="check-item"><span class="checkbox-sq"></span> صورة بطاقة الرقم القومي لولي الأمر سارية + إيصال مرافق.</div>
+        <div class="check-item"><span class="checkbox-sq"></span> البطاقة الصحية للطفل معتمدة من التأمين الصحي.</div>
+        <div class="check-item"><span class="checkbox-sq"></span> طباعة هذا الإشعار الإلكتروني وإرفاقه في حافظة بلاستيك.</div>
+        <div class="check-item"><span class="checkbox-sq"></span> ملف تقديم وحوافظ بلاستيكية معتمدة من المدرسة.</div>
+      </div>
+    </div>
+
+    <!-- Pledge -->
+    <div class="pledge-box">
+      <strong>إقرار ولي الأمر:</strong> أقر أنا ولي أمر الطالب المذكور بعاليه بأن كافة البيانات المدونة بهذه الاستمارة صحيحة ومطابقة للمستندات الرسمية، وأتعهد بالحضور إلى المدرسة لتقديم الملف الورقي وإجراء المقابلة في الموعد المحدد عند إعلان نتيجة التنسيق، وفي حالة عدم الحضور أو عدم صحة البيانات يعتبر الطلب لاغياً.
+    </div>
+
+    <!-- Signatures & Official Stamp -->
+    <div class="signatures-grid">
+      <div class="sig-col"><span>توقيع ولي الأمر</span><div class="sig-space"></div></div>
+      <div class="sig-col"><span>مسؤول شؤون الطلاب</span><div class="sig-space"></div></div>
+      <div class="sig-col"><div class="stamp-circle"><span>خاتم المدرسة</span><span>شؤون الطلبة</span></div></div>
+      <div class="sig-col"><span>يعتمد، مدير المدرسة</span><div class="sig-space"></div></div>
+    </div>
+  </div>
+
+  <script>
+    // Auto-populate data from URL parameters or localStorage
+    const params = new URLSearchParams(window.location.search);
+    const getParam = (k, fb = "—") => params.get(k) || fb;
+
+    let receiptData = null;
+    try {
+      const stored = sessionStorage.getItem("hodls_last_receipt");
+      if (stored) receiptData = JSON.parse(stored);
+    } catch {}
+
+    const data = receiptData || {
+      applicationId: getParam("id", "HODLS-2026-00001"),
+      studentName: getParam("studentName", "طالب تجريبي"),
+      nationalId: getParam("nationalId", "31910150102931"),
+      birthDate: getParam("birthDate", "2019-10-15"),
+      governorate: getParam("governorate", "الجيزة"),
+      gender: getParam("gender", "ذكر"),
+      ageText: getParam("ageText", "مستوفى السن"),
+      stage: getParam("stage", "المرحلة الابتدائية"),
+      grade: getParam("grade", "الصف الأول الابتدائي"),
+      secondLanguage: getParam("secondLanguage", "اللغة الفرنسية"),
+      fatherName: getParam("fatherName", "ولي أمر الطالب"),
+      fatherJob: getParam("fatherJob", "—"),
+      motherName: getParam("motherName", "—"),
+      motherJob: getParam("motherJob", "—"),
+      guardianPhone: getParam("guardianPhone", "01000000000"),
+      guardianPhoneAlt: getParam("guardianPhoneAlt", "—"),
+      address: getParam("address", "جمهورية مصر العربية"),
+      previousSchool: getParam("previousSchool", "—"),
+      email: getParam("email", "—"),
+      status: getParam("status", "قيد المراجعة"),
+      timestamp: getParam("timestamp", new Date().toISOString()),
+      academicYear: getParam("academicYear", "2026 / 2027")
+    };
+
+    document.getElementById("dossierAppId").textContent = data.applicationId;
+    document.getElementById("dossierStudentName").textContent = data.studentName;
+    document.getElementById("dossierNid").textContent = data.nationalId;
+    document.getElementById("dossierNidCell").textContent = data.nationalId;
+    document.getElementById("dossierBirthDate").textContent = data.birthDate;
+    document.getElementById("dossierGender").textContent = data.gender;
+    document.getElementById("dossierGov").textContent = data.governorate || "الجيزة";
+    document.getElementById("dossierAge").textContent = data.ageText || data.ageOnOctober?.text || "مستوفى السن";
+    document.getElementById("dossierStageGrade").textContent = `${data.stage} — ${data.grade}`;
+    document.getElementById("dossierLanguage").textContent = data.secondLanguage;
+    document.getElementById("dossierFatherName").textContent = data.fatherName;
+    document.getElementById("dossierFatherJob").textContent = data.fatherJob || "—";
+    document.getElementById("dossierMotherName").textContent = data.motherName || "—";
+    document.getElementById("dossierMotherJob").textContent = data.motherJob || "—";
+    document.getElementById("dossierPhone").textContent = data.guardianPhone;
+    document.getElementById("dossierPhoneAlt").textContent = data.guardianPhoneAlt || "—";
+    document.getElementById("dossierAddress").textContent = data.address;
+    document.getElementById("dossierSchool").textContent = data.previousSchool || "—";
+    document.getElementById("dossierEmail").textContent = data.email || "—";
+    document.getElementById("dossierStatus").textContent = data.status || "قيد المراجعة";
+    document.getElementById("dossierDate").textContent = data.timestamp ? new Date(data.timestamp).toLocaleDateString("ar-EG") : new Date().toLocaleDateString("ar-EG");
+    if (data.academicYear) document.getElementById("dossierAcademicYear").textContent = `العام الدراسي ${data.academicYear}`;
+
+    // PDF Download Function
+    window.downloadPdfDossier = async function() {
+      const element = document.getElementById("printableDossier");
+      const filename = `استمارة_تقديم_${data.applicationId || "HODLS"}_${(data.studentName || "").replace(/\s+/g, "_")}.pdf`;
+      const btn = document.querySelector(".btn-download-pdf");
+
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إنشاء ملف PDF...';
+        btn.disabled = true;
+      }
+
+      try {
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          scrollX: 0,
+          scrollY: 0
+        });
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.98);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4"
+        });
+
+        pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
+        pdf.save(filename);
+
+        if (btn) {
+          btn.innerHTML = '📥 تم التحميل بنجاح!';
+          setTimeout(() => {
+            btn.innerHTML = '📥 تحميل الاستمارة PDF (Download)';
+            btn.disabled = false;
+          }, 2000);
+        }
+      } catch (err) {
+        console.error("PDF generation failed:", err);
+        window.print();
+        if (btn) {
+          btn.innerHTML = '📥 تحميل الاستمارة PDF (Download)';
+          btn.disabled = false;
+        }
+      }
+    };
+
+    // Auto-download PDF or Print if requested
+    if (params.get("download") === "1") {
+      setTimeout(() => { downloadPdfDossier(); }, 600);
+    } else if (params.get("autoprint") === "1") {
+      setTimeout(() => { window.print(); }, 400);
+    }
+  </script>
+</body>
+</html>

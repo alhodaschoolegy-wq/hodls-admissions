@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "username": "master",
+    "passwordHash": "$2b$10$BAtJ9aDnXUNYl9yMG0BRZOTAMHUjQNnbVzXajNxe8Q2MeJ08WtPQy",
+    "fullName": "المدير العام / Master Admin",
+    "role": "master_admin",
+    "status": "active",
+    "createdAt": "2026-08-09T11:45:59.145Z"
+  },
+  {
+    "id": 2,
+    "username": "admin",
+    "passwordHash": "$2b$10$yI8wYJ6gbB211WvpEznuS.hfMsn4PU/fXm4FE7Tanj/VnHOoIyk7G",
+    "fullName": "إدارة التنسيق والقبول",
+    "role": "master_admin",
+    "status": "active",
+    "createdAt": "2026-08-09T11:45:59.204Z"
+  },
+  {
+    "id": 3,
+    "username": "staff1",
+    "passwordHash": "$2b$10$0UfhmBnqgUOebMQgR2VCCO9EjGk5DX8lzFdVqmWPXcCuGv/gtGJR2",
+    "fullName": "أ/ منى عبد العزيز - لجنة فحص الملفات",
+    "role": "staff_admin",
+    "status": "active",
+    "createdAt": "2026-08-09T11:45:59.265Z"
+  },
+  {
+    "id": 1786275973831,
+    "username": "khalid_admissions",
+    "passwordHash": "$2b$10$44kEhVfh6UNNY8F/PvmycO2RH0NiU8QPzK36rqzmDBoMKiNSzBA2W",
+    "fullName": "أ/ خالد عبد المنعم - مسؤول التنسيق",
+    "role": "staff_admin",
+    "status": "active",
+    "createdAt": "2026-08-09T11:46:13.888Z"
+  }
+]

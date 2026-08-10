@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="gradEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#04381e"/>
+      <stop offset="100%" stop-color="#087a3c"/>
+    </linearGradient>
+    <linearGradient id="gradGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c9a227"/>
+      <stop offset="100%" stop-color="#f5e49e"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="100" fill="url(#gradEmerald)"/>
+  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#gradGold)" stroke-width="8" stroke-dasharray="16 8"/>
+  <circle cx="256" cy="256" r="190" fill="#ffffff" opacity="0.96"/>
+  <path d="M256 120 L370 195 L256 270 L142 195 Z" fill="#087a3c"/>
+  <path d="M175 225 L175 285 Q256 330 337 285 L337 225 Q256 270 175 225 Z" fill="#c9a227"/>
+  <path d="M370 195 L370 290" stroke="#04381e" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="370" cy="295" r="10" fill="#c9a227"/>
+  <text x="256" y="375" text-anchor="middle" font-family="'Cairo', 'Arial', sans-serif" font-size="46" font-weight="900" fill="#04381e">H-O-D-L-S</text>
+  <text x="256" y="415" text-anchor="middle" font-family="'Cairo', 'Arial', sans-serif" font-size="20" font-weight="700" fill="#c9a227">مدرسة الهُدى الرسمية للغات</text>
+</svg>

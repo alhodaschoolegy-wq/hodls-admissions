@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>الرئيسية والإحصائيات | H-O-D-L-S</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" type="image/png" href="logo.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons Library: FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Charts Library: Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- SweetAlert2 Library -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Unified Admin CSS -->
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+  <!-- 1. Secure Login View -->
+  <div id="loginView" class="login-container" style="display:none;">
+    <div class="login-card">
+      <div class="login-card-header">
+        <img class="mark" src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="شعار مدرسة الهُدى">
+        <h1>لوحة إدارة التنسيق والقبول</h1>
+        <p>مدرسة الهُدى الرسمية المتميزة للغات (H-O-D-L-S)</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="login-field">
+          <label for="adminUsername"><i class="fa-solid fa-user"></i> اسم المستخدم (Username)</label>
+          <input type="text" id="adminUsername" placeholder="اسم المستخدم المصرح له" required autocomplete="username" autofocus>
+        </div>
+
+        <div class="login-field">
+          <label for="adminPassword"><i class="fa-solid fa-lock"></i> كلمة المرور (Password)</label>
+          <div class="password-field-wrapper">
+            <input type="password" id="adminPassword" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" id="btnTogglePassword" class="btn-toggle-password" title="إظهار كلمة المرور">
+              <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btnLogin">
+          <i class="fa-solid fa-shield-halved"></i> دخول آمن للمنظومة (JWT Auth)
+        </button>
+        <div id="loginError" class="err-box"></div>
+
+        <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border); text-align:center;">
+          <a href="/" style="display:inline-flex; align-items:center; gap:8px; color:var(--primary-dark); font-weight:800; font-size:13px; text-decoration:none; background:#f0fdf4; padding:8px 16px; border-radius:8px; border:1px solid #c9dcd1;">
+            <i class="fa-solid fa-house"></i> العودة لبوابة الطلاب والتقديم
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Dashboard Shell -->
+  <div id="appView" class="admin-shell" style="display:none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <a href="/dashboard" class="sidebar-brand">
+          <img class="sidebar-logo" src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="HODLS">
+          <div>
+            <h2>مدرسة الهُدى</h2>
+            <small>إدارة التنسيق</small>
+          </div>
+        </a>
+
+        <nav class="sidebar-nav">
+          <a href="/dashboard" class="nav-btn active" id="navDashboardBtn">
+            <i class="fa-solid fa-chart-pie"></i> <span>الرئيسية والإحصائيات</span>
+          </a>
+          <a href="/students" class="nav-btn" id="navStudentsBtn">
+            <i class="fa-solid fa-users"></i> <span>سجلات الطلاب</span>
+          </a>
+          <a href="/users" class="nav-btn" id="navUsersBtn" style="display:none;">
+            <i class="fa-solid fa-users-gear"></i> <span>إدارة المستخدمين والصلاحيات</span>
+          </a>
+          <a href="/settings" class="nav-btn" id="navSettingsBtn" style="display:none;">
+            <i class="fa-solid fa-sliders"></i> <span>الإعدادات والسياسات</span>
+          </a>
+          <button class="nav-btn" onclick="exportCsv()">
+            <i class="fa-solid fa-file-excel"></i> <span>تصدير Excel (CSV)</span>
+          </button>
+          <a href="/" target="_blank" class="nav-btn" style="text-decoration:none; color:#10b981; margin-top:8px; background:rgba(16,185,129,0.08);">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>بوابة الطلاب (الموقع)</span>
+          </a>
+        </nav>
+      </div>
+
+      <button class="nav-btn" onclick="logout()" style="color:#fca5a5;">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>تسجيل الخروج</span>
+      </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header Title with Live Badge -->
+      <div class="top-bar">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+            <h1><i class="fa-solid fa-chart-pie text-emerald"></i> لوحة الإحصائيات والمؤشرات العامة</h1>
+            <span class="badge acceptedFinal" style="font-size:12px; padding:3px 10px; gap:6px;">
+              <i class="fa-solid fa-circle text-emerald" style="font-size:8px;"></i> مباشر أونلاين
+            </span>
+          </div>
+          <small style="color:var(--muted);">العام الدراسي <span class="active-year-display">2026 / 2027</span> — يتم تحديث البيانات تلقائياً</small>
+        </div>
+        <div class="top-bar-actions">
+          <button class="btn-action" onclick="loadDashboardStats()" style="background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;" title="تحديث فوري">
+            <i class="fa-solid fa-rotate text-emerald"></i> تحديث فوري
+          </button>
+          <a href="/" target="_blank" class="btn-action" style="text-decoration:none; background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;">
+            <i class="fa-solid fa-globe text-emerald"></i> عرض بوابة الطلاب
+          </a>
+          <button class="btn-action" onclick="changeMyPassword()" style="background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;" title="تغيير كلمة مرورك الشخصية">
+            <i class="fa-solid fa-key text-emerald"></i> تغيير كلمة المرور
+          </button>
+          <div class="user-pill">
+            <i class="fa-solid fa-circle-user"></i>
+            <span id="adminLoggedUser">admin</span>
+            <span id="userRoleBadge" class="role-tag-staff">موظف</span>
+          </div>
+          <button class="btn-logout" onclick="logout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <div class="stat-card-header">
+            <span>إجمالي طلبات التسجيل</span>
+            <div class="stat-icon"><i class="fa-solid fa-folder-open"></i></div>
+          </div>
+          <strong id="statTotal">0</strong>
+        </div>
+        <div class="stat-card review">
+          <div class="stat-card-header">
+            <span>قيد المراجعة والفحص</span>
+            <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+          </div>
+          <strong id="statReview">0</strong>
+        </div>
+        <div class="stat-card accepted">
+          <div class="stat-card-header">
+            <span>المقبولون (مبدئي + نهائي)</span>
+            <div class="stat-icon"><i class="fa-solid fa-check-circle"></i></div>
+          </div>
+          <strong id="statAccepted">0</strong>
+        </div>
+        <div class="stat-card needsDocs">
+          <div class="stat-card-header">
+            <span>يحتاج استكمال أوراق</span>
+            <div class="stat-icon"><i class="fa-solid fa-file-circle-exclamation"></i></div>
+          </div>
+          <strong id="statNeedsDocs">0</strong>
+        </div>
+        <div class="stat-card rejected">
+          <div class="stat-card-header">
+            <span>الطلبات المرفوضة</span>
+            <div class="stat-icon"><i class="fa-solid fa-ban"></i></div>
+          </div>
+          <strong id="statRejected">0</strong>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3><i class="fa-solid fa-chart-pie text-emerald"></i> توزيع حالات ملفات التقديم</h3>
+          <div class="chart-container">
+            <canvas id="statusDoughnutChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3><i class="fa-solid fa-chart-column text-emerald"></i> أعداد الطلاب حسب المراحل الدراسية</h3>
+          <div class="chart-container">
+            <canvas id="stagesBarChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2><i class="fa-solid fa-bolt text-gold"></i> روابط وإجراءات سريعة</h2>
+        </div>
+        <div style="display:flex; gap:14px; flex-wrap:wrap;">
+          <a href="/students" class="btn-action">
+            <i class="fa-solid fa-users"></i> عرض وإدارة سجلات الطلاب
+          </a>
+          <button class="btn-action btn-gold-action" onclick="exportCsv()">
+            <i class="fa-solid fa-file-excel"></i> تصدير بيانات الطلاب كاملة إلى Excel
+          </button>
+          <a href="/settings" class="btn-action" style="background:#f8faf9; color:var(--ink); border:1px solid var(--border);">
+            <i class="fa-solid fa-sliders"></i> تعديل العام الدراسي وصور المدرسة
+          </a>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="assets/js/adminCommon.js"></script>
+  <script>
+    let statusChartInstance = null;
+    let stagesChartInstance = null;
+
+    async function loadDashboardStats() {
+      try {
+        const d = await apiRequest("stats");
+        const stats = d.stats || {};
+        
+        animateCounter("statTotal", stats.total || 0);
+        animateCounter("statReview", stats.byStatus?.review || 0);
+        animateCounter("statAccepted", (stats.byStatus?.acceptedInitial || 0) + (stats.byStatus?.acceptedFinal || 0));
+        animateCounter("statNeedsDocs", stats.byStatus?.needsDocs || 0);
+        animateCounter("statRejected", stats.byStatus?.rejected || 0);
+
+        renderCharts(stats);
+      } catch (err) {
+        console.error("Dashboard stats error:", err);
+      }
+    }
+
+    function animateCounter(elementId, targetVal) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      let start = 0;
+      const duration = 600;
+      const stepTime = 20;
+      const steps = duration / stepTime;
+      const increment = targetVal / steps;
+
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= targetVal) {
+          el.textContent = targetVal;
+          clearInterval(timer);
+        } else {
+          el.textContent = Math.ceil(start);
+        }
+      }, stepTime);
+    }
+
+    function renderCharts(stats) {
+      const statusCtx = document.getElementById("statusDoughnutChart")?.getContext("2d");
+      if (statusCtx) {
+        if (statusChartInstance) statusChartInstance.destroy();
+        statusChartInstance = new Chart(statusCtx, {
+          type: "doughnut",
+          data: {
+            labels: ["قيد المراجعة", "مقبول مبدئياً", "مقبول نهائياً", "يحتاج أوراق", "مرفوض"],
+            datasets: [{
+              data: [
+                stats.byStatus?.review || 0,
+                stats.byStatus?.acceptedInitial || 0,
+                stats.byStatus?.acceptedFinal || 0,
+                stats.byStatus?.needsDocs || 0,
+                stats.byStatus?.rejected || 0,
+              ],
+              backgroundColor: ["#f59e0b", "#0ea5e9", "#10b981", "#a855f7", "#ef4444"],
+              borderWidth: 2,
+              borderColor: "#ffffff",
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "right", labels: { font: { family: "'Cairo', sans-serif", size: 12 } } },
+            },
+          },
+        });
+      }
+
+      const stagesCtx = document.getElementById("stagesBarChart")?.getContext("2d");
+      if (stagesCtx) {
+        if (stagesChartInstance) stagesChartInstance.destroy();
+        stagesChartInstance = new Chart(stagesCtx, {
+          type: "bar",
+          data: {
+            labels: ["المرحلة الابتدائية", "المرحلة الإعدادية", "المرحلة الثانوية"],
+            datasets: [{
+              label: "عدد الطلاب المسجلين",
+              data: [
+                stats.byStage?.primary || 0,
+                stats.byStage?.prep || 0,
+                stats.byStage?.sec || 0,
+              ],
+              backgroundColor: ["#087a3c", "#c9a227", "#0284c7"],
+              borderRadius: 8,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: "'Cairo', sans-serif" } } },
+              x: { ticks: { font: { family: "'Cairo', sans-serif", size: 12 } } },
+            },
+          },
+        });
+      }
+    }
+
+    // Initialize Page & Start Real-time Auto-Polling
+    setupLoginForm(async () => {
+      await loadDashboardStats();
+      setInterval(loadDashboardStats, 7000);
+    });
+
+    initAdminAuth("dashboard", async () => {
+      await loadDashboardStats();
+      setInterval(loadDashboardStats, 7000);
+    });
+  </script>
+</body>
+</html>

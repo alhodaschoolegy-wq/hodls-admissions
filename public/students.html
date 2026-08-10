@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>سجلات الطلاب والتقديم | H-O-D-L-S</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" type="image/png" href="logo.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons Library: FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- SweetAlert2 Library -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Unified Admin CSS -->
+  <link rel="stylesheet" href="assets/css/admin.css">
+  <style>
+    .edit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .edit-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .edit-field.full {
+      grid-column: 1 / -1;
+    }
+    .edit-field label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .edit-field input, .edit-field select, .edit-field textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13.5px;
+      outline: none;
+      background: #fbfdfc;
+      transition: all 0.2s;
+    }
+    .edit-field input:focus, .edit-field select:focus, .edit-field textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(8, 122, 60, 0.1);
+    }
+    .edit-section-title {
+      grid-column: 1 / -1;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary-surface);
+      padding-bottom: 6px;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-actions-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Secure Login View -->
+  <div id="loginView" class="login-container" style="display:none;">
+    <div class="login-card">
+      <div class="login-card-header">
+        <img class="mark" src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="شعار مدرسة الهُدى">
+        <h1>لوحة إدارة التنسيق والقبول</h1>
+        <p>مدرسة الهُدى الرسمية المتميزة للغات (H-O-D-L-S)</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="login-field">
+          <label for="adminUsername"><i class="fa-solid fa-user"></i> اسم المستخدم (Username)</label>
+          <input type="text" id="adminUsername" placeholder="اسم المستخدم المصرح له" required autocomplete="username" autofocus>
+        </div>
+
+        <div class="login-field">
+          <label for="adminPassword"><i class="fa-solid fa-lock"></i> كلمة المرور (Password)</label>
+          <div class="password-field-wrapper">
+            <input type="password" id="adminPassword" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" id="btnTogglePassword" class="btn-toggle-password" title="إظهار كلمة المرور">
+              <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btnLogin">
+          <i class="fa-solid fa-shield-halved"></i> دخول آمن للمنظومة (JWT Auth)
+        </button>
+        <div id="loginError" class="err-box"></div>
+
+        <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border); text-align:center;">
+          <a href="/" style="display:inline-flex; align-items:center; gap:8px; color:var(--primary-dark); font-weight:800; font-size:13px; text-decoration:none; background:#f0fdf4; padding:8px 16px; border-radius:8px; border:1px solid #c9dcd1;">
+            <i class="fa-solid fa-house"></i> العودة لبوابة الطلاب والتقديم
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Students Page Shell -->
+  <div id="appView" class="admin-shell" style="display:none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <a href="/dashboard" class="sidebar-brand">
+          <img class="sidebar-logo" src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="HODLS">
+          <div>
+            <h2>مدرسة الهُدى</h2>
+            <small>إدارة التنسيق</small>
+          </div>
+        </a>
+
+        <nav class="sidebar-nav">
+          <a href="/dashboard" class="nav-btn" id="navDashboardBtn">
+            <i class="fa-solid fa-chart-pie"></i> <span>الرئيسية والإحصائيات</span>
+          </a>
+          <a href="/students" class="nav-btn active" id="navStudentsBtn">
+            <i class="fa-solid fa-users"></i> <span>سجلات الطلاب</span>
+          </a>
+          <a href="/users" class="nav-btn" id="navUsersBtn" style="display:none;">
+            <i class="fa-solid fa-users-gear"></i> <span>إدارة المستخدمين والصلاحيات</span>
+          </a>
+          <a href="/settings" class="nav-btn" id="navSettingsBtn" style="display:none;">
+            <i class="fa-solid fa-sliders"></i> <span>الإعدادات والسياسات</span>
+          </a>
+          <button class="nav-btn" onclick="exportCsv()">
+            <i class="fa-solid fa-file-excel"></i> <span>تصدير Excel (CSV)</span>
+          </button>
+          <a href="/" target="_blank" class="nav-btn" style="text-decoration:none; color:#10b981; margin-top:8px; background:rgba(16,185,129,0.08);">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>بوابة الطلاب (الموقع)</span>
+          </a>
+        </nav>
+      </div>
+
+      <button class="nav-btn" onclick="logout()" style="color:#fca5a5;">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>تسجيل الخروج</span>
+      </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <div class="top-bar">
+        <div>
+          <h1><i class="fa-solid fa-users text-emerald"></i> سجلات وقوائم المتقدمين</h1>
+          <small style="color:var(--muted);">العام الدراسي <span class="active-year-display">2026 / 2027</span></small>
+        </div>
+        <div class="top-bar-actions">
+          <a href="/" target="_blank" class="btn-action" style="text-decoration:none; background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;">
+            <i class="fa-solid fa-globe text-emerald"></i> عرض بوابة الطلاب
+          </a>
+          <button class="btn-action" onclick="changeMyPassword()" style="background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;" title="تغيير كلمة مرورك الشخصية">
+            <i class="fa-solid fa-key text-emerald"></i> تغيير كلمة المرور
+          </button>
+          <div class="user-pill">
+            <i class="fa-solid fa-circle-user"></i>
+            <span id="adminLoggedUser">admin</span>
+            <span id="userRoleBadge" class="role-tag-staff">موظف</span>
+          </div>
+          <button class="btn-logout" onclick="logout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+          </button>
+        </div>
+      </div>
+
+      <!-- Records Table Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2><i class="fa-solid fa-table-list text-emerald"></i> قائمة الطلاب المتقدمين والتنسيق</h2>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-action btn-gold-action" onclick="exportCsv()">
+              <i class="fa-solid fa-file-excel"></i> تصدير Excel
+            </button>
+            <button class="btn-action" onclick="loadApplications()">
+              <i class="fa-solid fa-rotate"></i> تحديث
+            </button>
+          </div>
+        </div>
+
+        <!-- Toolbar & Filters -->
+        <div class="toolbar">
+          <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="tableSearch" placeholder="بحث باسم الطالب، الرقم القومي، رقم الطلب، أو رقم الهاتف..." oninput="handleSearchInput()">
+          </div>
+
+          <select id="filterStatus" onchange="handleFilterChange()">
+            <option value="">جميع الحالات</option>
+            <option value="قيد المراجعة">قيد المراجعة</option>
+            <option value="مقبول مبدئياً">مقبول مبدئياً</option>
+            <option value="مقبول نهائياً">مقبول نهائياً</option>
+            <option value="يحتاج استكمال أوراق">يحتاج استكمال أوراق</option>
+            <option value="مرفوض">مرفوض</option>
+          </select>
+
+          <select id="filterStage" onchange="handleFilterChange()">
+            <option value="">جميع المراحل الدراسية</option>
+            <option value="المرحلة الابتدائية">المرحلة الابتدائية</option>
+            <option value="المرحلة الإعدادية">المرحلة الإعدادية</option>
+            <option value="المرحلة الثانوية">المرحلة الثانوية</option>
+          </select>
+
+          <select id="filterPageSize" onchange="handlePageSizeChange()">
+            <option value="10">10 لكل صفحة</option>
+            <option value="25">25 لكل صفحة</option>
+            <option value="50">50 لكل صفحة</option>
+            <option value="100">100 لكل صفحة</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortBy('applicationId')">رقم الطلب <i class="fa-solid fa-sort"></i></th>
+                <th onclick="sortBy('studentName')">اسم الطالب <i class="fa-solid fa-sort"></i></th>
+                <th onclick="sortBy('nationalId')">الرقم القومي <i class="fa-solid fa-sort"></i></th>
+                <th onclick="sortBy('stage')">المرحلة والصف <i class="fa-solid fa-sort"></i></th>
+                <th onclick="sortBy('secondLanguage')">اللغة الثانية <i class="fa-solid fa-sort"></i></th>
+                <th onclick="sortBy('guardianPhone')">هاتف ولي الأمر <i class="fa-solid fa-sort"></i></th>
+                <th onclick="sortBy('birthDate')">السن / الميلاد <i class="fa-solid fa-sort"></i></th>
+                <th onclick="sortBy('status')">الحالة <i class="fa-solid fa-sort"></i></th>
+                <th style="min-width:180px;">إجراءات الإدارة</th>
+              </tr>
+            </thead>
+            <tbody id="appRows">
+              <tr><td colspan="9" style="text-align:center;padding:36px;color:var(--muted);"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-bar">
+          <div id="paginationSummary">عرض 0 من 0 طالب</div>
+          <div class="pagination-pages" id="paginationControls"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Application Full Edit & Details Modal -->
+  <div class="modal" id="detailsModal">
+    <div class="modal-card" style="width:min(920px, 100%);">
+      <div class="modal-head">
+        <h2 id="modalAppId"><i class="fa-solid fa-user-pen"></i> تعديل وفحص ملف الطالب</h2>
+        <button class="btn-close-modal" onclick="closeDetailsModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="editStudentForm" onsubmit="event.preventDefault(); saveAllStudentChanges();">
+        <div class="edit-grid">
+          <!-- 1. Student Identity -->
+          <div class="edit-section-title"><i class="fa-solid fa-id-badge text-emerald"></i> بيانات الطالب الأساسية</div>
+          
+          <div class="edit-field">
+            <label><i class="fa-solid fa-user"></i> اسم الطالب رباعياً (بالعربية):</label>
+            <input type="text" id="editStudentName" required>
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-id-card"></i> الرقم القومي للطالب (14 رقم):</label>
+            <input type="text" id="editNationalId" required maxlength="14">
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-layer-group"></i> المرحلة الدراسية:</label>
+            <select id="editStage" onchange="handleStageChangeModal()" required>
+              <option value="المرحلة الابتدائية">المرحلة الابتدائية</option>
+              <option value="المرحلة الإعدادية">المرحلة الإعدادية</option>
+              <option value="المرحلة الثانوية">المرحلة الثانوية</option>
+            </select>
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-graduation-cap"></i> الصف الدراسي:</label>
+            <select id="editGrade" required></select>
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-language"></i> اللغة الأجنبية الثانية:</label>
+            <select id="editSecondLanguage">
+              <option value="">لم يتم الاختيار بعد</option>
+              <option value="اللغة الفرنسية">اللغة الفرنسية (French)</option>
+              <option value="اللغة الألمانية">اللغة الألمانية (Deutsch)</option>
+            </select>
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-calendar-day"></i> تاريخ الميلاد:</label>
+            <input type="date" id="editBirthDate">
+          </div>
+
+          <!-- 2. Parents & Contact -->
+          <div class="edit-section-title"><i class="fa-solid fa-users text-gold"></i> بيانات ولي الأمر والتواصل</div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-person"></i> اسم الأب بالكامل:</label>
+            <input type="text" id="editFatherName" required>
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-briefcase"></i> وظيفة الأب:</label>
+            <input type="text" id="editFatherJob">
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-person-dress"></i> اسم الأم بالكامل:</label>
+            <input type="text" id="editMotherName" required>
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-briefcase"></i> وظيفة الأم:</label>
+            <input type="text" id="editMotherJob">
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-phone"></i> هاتف ولي الأمر الأساسي:</label>
+            <input type="tel" id="editGuardianPhone" required>
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-phone-volume"></i> هاتف إضافي (بديل):</label>
+            <input type="tel" id="editGuardianPhoneAlt">
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-envelope"></i> البريد الإلكتروني:</label>
+            <input type="email" id="editEmail">
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-school"></i> المدرسة السابقة (في حالة التحويل):</label>
+            <input type="text" id="editPreviousSchool">
+          </div>
+
+          <div class="edit-field full">
+            <label><i class="fa-solid fa-location-dot"></i> العنوان بالتفصيل:</label>
+            <input type="text" id="editAddress" required>
+          </div>
+
+          <div class="edit-field full">
+            <label><i class="fa-solid fa-comment-dots"></i> ملاحظات ولي الأمر المسجلة مع الطلب:</label>
+            <textarea id="editNotes" rows="2"></textarea>
+          </div>
+
+          <!-- 3. Admission Status & Admin Notes -->
+          <div class="edit-section-title"><i class="fa-solid fa-stamp text-emerald"></i> قرار التنسيق وحالة الملف</div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-list-check"></i> حالة الطلب الحالية:</label>
+            <select id="editStatusSelect" style="font-weight:800; background:#f0fdf4; border-color:#bbf7d0;">
+              <option value="قيد المراجعة">قيد المراجعة والفحص</option>
+              <option value="مقبول مبدئياً">مقبول مبدئياً</option>
+              <option value="مقبول نهائياً">مقبول نهائياً</option>
+              <option value="يحتاج استكمال أوراق">يحتاج استكمال أوراق</option>
+              <option value="مرفوض">مرفوض</option>
+            </select>
+          </div>
+
+          <div class="edit-field">
+            <label><i class="fa-solid fa-clipboard-question"></i> ملاحظات التنسيق (تظهر لولي الأمر عند الاستعلام):</label>
+            <input type="text" id="editAdminNotes" placeholder="مثال: يرجى التوجه للمدرسة لإجراء المقابلة يوم...">
+          </div>
+        </div>
+
+        <!-- Modal Actions Footer -->
+        <div class="modal-actions-footer">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="submit" class="btn-action" id="btnSaveStudentChanges">
+              <i class="fa-solid fa-floppy-disk"></i> حفظ كافة التعديلات أونلاين
+            </button>
+            <button type="button" class="btn-details" onclick="printStudentCard()">
+              <i class="fa-solid fa-print"></i> طباعة استمارة الطالب
+            </button>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="btn-details btn-danger" onclick="deleteCurrentStudentModal()">
+              <i class="fa-solid fa-trash"></i> حذف ملف الطالب نهائياً
+            </button>
+            <button type="button" class="btn-details" onclick="closeDetailsModal()">
+              إلغاء
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/adminCommon.js"></script>
+  <script>
+    let allApps = [];
+    let filteredApps = [];
+    let currentPage = 1;
+    let pageSize = 10;
+    let sortColumn = "timestamp";
+    let sortDirection = "desc";
+    let selectedApp = null;
+    let searchTimer = null;
+
+    const GRADES_MAP = {
+      "المرحلة الابتدائية": [
+        "الصف الأول الابتدائي", "الصف الثاني الابتدائي", "الصف الثالث الابتدائي",
+        "الصف الرابع الابتدائي", "الصف الخامس الابتدائي", "الصف السادس الابتدائي"
+      ],
+      "المرحلة الإعدادية": [
+        "الصف الأول الإعدادي", "الصف الثاني الإعدادي", "الصف الثالث الإعدادي"
+      ],
+      "المرحلة الثانوية": [
+        "الصف الأول الثانوي", "الصف الثاني الثانوي", "الصف الثالث الثانوي"
+      ]
+    };
+
+    function handleStageChangeModal(targetGrade = "") {
+      const stage = document.getElementById("editStage").value;
+      const gradeSelect = document.getElementById("editGrade");
+      const list = GRADES_MAP[stage] || [];
+      gradeSelect.innerHTML = list.map((g) => `<option value="${escapeHtml(g)}" ${g === targetGrade ? 'selected' : ''}>${escapeHtml(g)}</option>`).join("");
+    }
+
+    async function loadApplications() {
+      try {
+        const res = await apiRequest("applications");
+        allApps = res.items || [];
+        applyClientFilters();
+      } catch (err) {
+        document.getElementById("appRows").innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--red);">${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    function handleSearchInput() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        currentPage = 1;
+        applyClientFilters();
+      }, 250);
+    }
+
+    function handleFilterChange() {
+      currentPage = 1;
+      applyClientFilters();
+    }
+
+    function handlePageSizeChange() {
+      pageSize = parseInt(document.getElementById("filterPageSize").value) || 10;
+      currentPage = 1;
+      applyClientFilters();
+    }
+
+    function sortBy(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === "asc" ? "desc" : "asc";
+      } else {
+        sortColumn = column;
+        sortDirection = "asc";
+      }
+      applyClientFilters();
+    }
+
+    function applyClientFilters() {
+      const q = (document.getElementById("tableSearch")?.value || "").trim().toLowerCase();
+      const statusFilter = document.getElementById("filterStatus")?.value || "";
+      const stageFilter = document.getElementById("filterStage")?.value || "";
+
+      filteredApps = allApps.filter((a) => {
+        if (statusFilter && a.status !== statusFilter) return false;
+        if (stageFilter && a.stage !== stageFilter) return false;
+        if (q) {
+          const match = [
+            a.applicationId,
+            a.studentName,
+            a.nationalId,
+            a.guardianPhone,
+            a.fatherName,
+            a.motherName
+          ].some((val) => String(val || "").toLowerCase().includes(q));
+          if (!match) return false;
+        }
+        return true;
+      });
+
+      filteredApps.sort((a, b) => {
+        let valA = a[sortColumn] ?? "";
+        let valB = b[sortColumn] ?? "";
+        if (sortColumn === "timestamp") {
+          valA = new Date(valA).getTime();
+          valB = new Date(valB).getTime();
+        }
+        if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+        if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+
+      renderTable();
+      renderPagination();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("appRows");
+      if (filteredApps.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:36px;color:var(--muted);"><i class="fa-solid fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>لا توجد طلبات مطابقة للبحث أو الفلتر</td></tr>`;
+        return;
+      }
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const paginatedItems = filteredApps.slice(startIndex, startIndex + pageSize);
+
+      tbody.innerHTML = paginatedItems.map((a) => {
+        let badgeClass = "review";
+        let icon = '<i class="fa-solid fa-clock"></i>';
+        if (a.status === "مقبول نهائياً") { badgeClass = "acceptedFinal"; icon = '<i class="fa-solid fa-check-double"></i>'; }
+        else if (a.status === "مقبول مبدئياً") { badgeClass = "acceptedInitial"; icon = '<i class="fa-solid fa-check"></i>'; }
+        else if (a.status === "يحتاج استكمال أوراق") { badgeClass = "needsDocs"; icon = '<i class="fa-solid fa-file-circle-question"></i>'; }
+        else if (a.status === "مرفوض") { badgeClass = "rejected"; icon = '<i class="fa-solid fa-xmark"></i>'; }
+
+        return `
+          <tr>
+            <td><strong>${escapeHtml(a.applicationId)}</strong></td>
+            <td><strong>${escapeHtml(a.studentName)}</strong></td>
+            <td><code dir="ltr">${escapeHtml(a.nationalId)}</code></td>
+            <td>${escapeHtml(a.stage)}<br><small style="color:var(--muted);">${escapeHtml(a.grade)}</small></td>
+            <td>${escapeHtml(a.secondLanguage || "—")}</td>
+            <td><span dir="ltr">${escapeHtml(a.guardianPhone)}</span></td>
+            <td>${escapeHtml(a.ageOnOctober?.text || a.birthDate)}</td>
+            <td><span class="badge ${badgeClass}">${icon} ${escapeHtml(a.status)}</span></td>
+            <td>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn-details" onclick="openDetailsModal('${escapeHtml(a.applicationId)}')">
+                  <i class="fa-solid fa-pen-to-square"></i> تعديل
+                </button>
+                <button class="btn-details btn-danger" onclick="deleteStudentPrompt('${escapeHtml(a.applicationId)}', '${escapeHtml(a.studentName)}')">
+                  <i class="fa-solid fa-trash"></i> مسح
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderPagination() {
+      const total = filteredApps.length;
+      const totalPages = Math.ceil(total / pageSize) || 1;
+      const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+      const end = Math.min(currentPage * pageSize, total);
+
+      document.getElementById("paginationSummary").textContent = `عرض ${start} إلى ${end} من إجمالي ${total} طالب مسجل`;
+
+      const controls = document.getElementById("paginationControls");
+      if (totalPages <= 1) {
+        controls.innerHTML = "";
+        return;
+      }
+
+      let html = `
+        <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""}>
+          <i class="fa-solid fa-chevron-right"></i> السابق
+        </button>
+      `;
+
+      for (let p = 1; p <= totalPages; p++) {
+        if (p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)) {
+          html += `
+            <button class="page-btn ${p === currentPage ? "active" : ""}" onclick="changePage(${p})">
+              ${p}
+            </button>
+          `;
+        } else if (p === currentPage - 2 || p === currentPage + 2) {
+          html += `<span style="padding:0 4px;color:var(--muted);">...</span>`;
+        }
+      }
+
+      html += `
+        <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? "disabled" : ""}>
+          التالي <i class="fa-solid fa-chevron-left"></i>
+        </button>
+      `;
+
+      controls.innerHTML = html;
+    }
+
+    function changePage(p) {
+      const totalPages = Math.ceil(filteredApps.length / pageSize) || 1;
+      if (p < 1 || p > totalPages) return;
+      currentPage = p;
+      renderTable();
+      renderPagination();
+    }
+
+    function openDetailsModal(appId) {
+      selectedApp = allApps.find((a) => a.applicationId === appId);
+      if (!selectedApp) return;
+
+      document.getElementById("modalAppId").innerHTML = `<i class="fa-solid fa-user-pen"></i> تعديل ملف الطالب: ${selectedApp.applicationId} (${selectedApp.studentName})`;
+
+      document.getElementById("editStudentName").value = selectedApp.studentName || "";
+      document.getElementById("editNationalId").value = selectedApp.nationalId || "";
+      document.getElementById("editStage").value = selectedApp.stage || "المرحلة الابتدائية";
+      handleStageChangeModal(selectedApp.grade || "");
+      document.getElementById("editSecondLanguage").value = selectedApp.secondLanguage || "";
+      document.getElementById("editBirthDate").value = selectedApp.birthDate || "";
+      
+      document.getElementById("editFatherName").value = selectedApp.fatherName || "";
+      document.getElementById("editFatherJob").value = selectedApp.fatherJob || "";
+      document.getElementById("editMotherName").value = selectedApp.motherName || "";
+      document.getElementById("editMotherJob").value = selectedApp.motherJob || "";
+      document.getElementById("editGuardianPhone").value = selectedApp.guardianPhone || "";
+      document.getElementById("editGuardianPhoneAlt").value = selectedApp.guardianPhoneAlt || "";
+      document.getElementById("editEmail").value = selectedApp.email || "";
+      document.getElementById("editAddress").value = selectedApp.address || "";
+      document.getElementById("editPreviousSchool").value = selectedApp.previousSchool || "";
+      document.getElementById("editNotes").value = selectedApp.notes || "";
+
+      document.getElementById("editStatusSelect").value = selectedApp.status || "قيد المراجعة";
+      document.getElementById("editAdminNotes").value = selectedApp.adminNotes || "";
+
+      document.getElementById("detailsModal").classList.add("show");
+    }
+
+    function closeDetailsModal() {
+      document.getElementById("detailsModal").classList.remove("show");
+      selectedApp = null;
+    }
+
+    async function saveAllStudentChanges() {
+      if (!selectedApp) return;
+      const btn = document.getElementById("btnSaveStudentChanges");
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري حفظ التعديلات...';
+
+      const payload = {
+        applicationId: selectedApp.applicationId,
+        studentName: document.getElementById("editStudentName").value.trim(),
+        nationalId: document.getElementById("editNationalId").value.trim(),
+        stage: document.getElementById("editStage").value,
+        grade: document.getElementById("editGrade").value,
+        secondLanguage: document.getElementById("editSecondLanguage").value,
+        fatherName: document.getElementById("editFatherName").value.trim(),
+        fatherJob: document.getElementById("editFatherJob").value.trim(),
+        motherName: document.getElementById("editMotherName").value.trim(),
+        motherJob: document.getElementById("editMotherJob").value.trim(),
+        guardianPhone: document.getElementById("editGuardianPhone").value.trim(),
+        guardianPhoneAlt: document.getElementById("editGuardianPhoneAlt").value.trim(),
+        email: document.getElementById("editEmail").value.trim(),
+        address: document.getElementById("editAddress").value.trim(),
+        previousSchool: document.getElementById("editPreviousSchool").value.trim(),
+        notes: document.getElementById("editNotes").value.trim(),
+        status: document.getElementById("editStatusSelect").value,
+        adminNotes: document.getElementById("editAdminNotes").value.trim(),
+      };
+
+      try {
+        const res = await apiRequest("updateApplication", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+
+        Swal.fire({
+          icon: "success",
+          title: "تم حفظ التعديلات بنجاح!",
+          text: res.message,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        closeDetailsModal();
+        await loadApplications();
+      } catch (err) {
+        Swal.fire({ icon: "error", title: "خطأ في الحفظ", text: err.message });
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ كافة التعديلات أونلاين';
+      }
+    }
+
+    async function deleteStudentPrompt(appId, studentName) {
+      const confirm = await Swal.fire({
+        title: `مسح ملف الطالب؟`,
+        html: `<div style="font-family:'IBM Plex Sans Arabic',sans-serif; text-align:right;">
+          هل أنت متأكد من حذف ملف الطالب <strong>${escapeHtml(studentName)}</strong> (${escapeHtml(appId)}) بشكل نهائي من المنظومة وقاعدة البيانات؟
+        </div>`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#b91c1c",
+        cancelButtonColor: "#62756a",
+        confirmButtonText: "نعم، احذف الملف نهائياً",
+        cancelButtonText: "إلغاء",
+      });
+
+      if (confirm.isConfirmed) {
+        try {
+          const res = await apiRequest("deleteApplication", {
+            method: "POST",
+            body: JSON.stringify({ applicationId: appId }),
+          });
+
+          Swal.fire({
+            icon: "success",
+            title: "تم الحذف بنجاح",
+            text: res.message,
+            timer: 1500,
+            showConfirmButton: false,
+          });
+
+          await loadApplications();
+        } catch (err) {
+          Swal.fire({ icon: "error", title: "خطأ في الحذف", text: err.message });
+        }
+      }
+    }
+
+    async function deleteCurrentStudentModal() {
+      if (!selectedApp) return;
+      const appId = selectedApp.applicationId;
+      const studentName = selectedApp.studentName;
+      closeDetailsModal();
+      await deleteStudentPrompt(appId, studentName);
+    }
+
+    function printStudentCard() {
+      if (!selectedApp) return;
+      window.open(`/print.html?id=${encodeURIComponent(selectedApp.applicationId)}`, '_blank');
+    }
+
+    // Initialize Page
+    setupLoginForm(async () => {
+      await loadApplications();
+    });
+
+    initAdminAuth("students", async () => {
+      await loadApplications();
+    });
+  </script>
+</body>
+</html>

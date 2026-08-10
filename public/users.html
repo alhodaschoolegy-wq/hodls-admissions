@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>إدارة المستخدمين والصلاحيات | H-O-D-L-S</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" type="image/png" href="logo.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons Library: FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- SweetAlert2 Library -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Unified Admin CSS -->
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+  <!-- 1. Secure Login View -->
+  <div id="loginView" class="login-container" style="display:none;">
+    <div class="login-card">
+      <div class="login-card-header">
+        <img class="mark" src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="شعار مدرسة الهُدى">
+        <h1>لوحة إدارة التنسيق والقبول</h1>
+        <p>مدرسة الهُدى الرسمية المتميزة للغات (H-O-D-L-S)</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="login-field">
+          <label for="adminUsername"><i class="fa-solid fa-user"></i> اسم المستخدم (Username)</label>
+          <input type="text" id="adminUsername" placeholder="اسم المستخدم المصرح له" required autocomplete="username" autofocus>
+        </div>
+
+        <div class="login-field">
+          <label for="adminPassword"><i class="fa-solid fa-lock"></i> كلمة المرور (Password)</label>
+          <div class="password-field-wrapper">
+            <input type="password" id="adminPassword" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" id="btnTogglePassword" class="btn-toggle-password" title="إظهار كلمة المرور">
+              <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btnLogin">
+          <i class="fa-solid fa-shield-halved"></i> دخول آمن للمنظومة (JWT Auth)
+        </button>
+        <div id="loginError" class="err-box"></div>
+
+        <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border); text-align:center;">
+          <a href="/" style="display:inline-flex; align-items:center; gap:8px; color:var(--primary-dark); font-weight:800; font-size:13px; text-decoration:none; background:#f0fdf4; padding:8px 16px; border-radius:8px; border:1px solid #c9dcd1;">
+            <i class="fa-solid fa-house"></i> العودة لبوابة الطلاب والتقديم
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Users Page Shell -->
+  <div id="appView" class="admin-shell" style="display:none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <a href="/dashboard" class="sidebar-brand">
+          <img class="sidebar-logo" src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="HODLS">
+          <div>
+            <h2>مدرسة الهُدى</h2>
+            <small>إدارة التنسيق</small>
+          </div>
+        </a>
+
+        <nav class="sidebar-nav">
+          <a href="/dashboard" class="nav-btn" id="navDashboardBtn">
+            <i class="fa-solid fa-chart-pie"></i> <span>الرئيسية والإحصائيات</span>
+          </a>
+          <a href="/students" class="nav-btn" id="navStudentsBtn">
+            <i class="fa-solid fa-users"></i> <span>سجلات الطلاب</span>
+          </a>
+          <a href="/users" class="nav-btn active" id="navUsersBtn">
+            <i class="fa-solid fa-users-gear"></i> <span>إدارة المستخدمين والصلاحيات</span>
+          </a>
+          <a href="/settings" class="nav-btn" id="navSettingsBtn">
+            <i class="fa-solid fa-sliders"></i> <span>الإعدادات والسياسات</span>
+          </a>
+          <button class="nav-btn" onclick="exportCsv()">
+            <i class="fa-solid fa-file-excel"></i> <span>تصدير Excel (CSV)</span>
+          </button>
+          <a href="/" target="_blank" class="nav-btn" style="text-decoration:none; color:#10b981; margin-top:8px; background:rgba(16,185,129,0.08);">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>بوابة الطلاب (الموقع)</span>
+          </a>
+        </nav>
+      </div>
+
+      <button class="nav-btn" onclick="logout()" style="color:#fca5a5;">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>تسجيل الخروج</span>
+      </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <div class="top-bar">
+        <div>
+          <h1><i class="fa-solid fa-users-gear text-emerald"></i> إدارة حسابات المستخدمين وصلاحيات النظام</h1>
+          <small style="color:var(--muted);">العام الدراسي <span class="active-year-display">2026 / 2027</span></small>
+        </div>
+        <div class="top-bar-actions">
+          <a href="/" target="_blank" class="btn-action" style="text-decoration:none; background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;">
+            <i class="fa-solid fa-globe text-emerald"></i> عرض بوابة الطلاب
+          </a>
+          <button class="btn-action" onclick="changeMyPassword()" style="background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;" title="تغيير كلمة مرورك الشخصية">
+            <i class="fa-solid fa-key text-emerald"></i> تغيير كلمة المرور
+          </button>
+          <div class="user-pill">
+            <i class="fa-solid fa-circle-user"></i>
+            <span id="adminLoggedUser">admin</span>
+            <span id="userRoleBadge" class="role-tag-master">مدير عام</span>
+          </div>
+          <button class="btn-logout" onclick="logout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+          </button>
+        </div>
+      </div>
+
+      <!-- Users Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2><i class="fa-solid fa-user-shield text-gold"></i> الحسابات المسجلة وصلاحيات الدخول</h2>
+          <button class="btn-action btn-gold-action" onclick="openCreateUserModal()">
+            <i class="fa-solid fa-user-plus"></i> إضافة مستخدم جديد للنظام
+          </button>
+        </div>
+
+        <p style="color:var(--muted); margin-bottom:18px; font-size:13px;">
+          يمكن للمدير العام إضافة حسابات لموظفي شؤون الطلاب، وتحديد أدوارهم، وإعادة تعيين كلمات المرور، أو تعطيل الحسابات عند الحاجة.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>اسم المستخدم (Username)</th>
+                <th>الاسم الكامل بالعربية</th>
+                <th>نوع الصلاحية (Role)</th>
+                <th>الحالة</th>
+                <th>تاريخ الإنشاء</th>
+                <th>إجراءات الإدارة</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableRows">
+              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل قائمة المستخدمين...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="assets/js/adminCommon.js"></script>
+  <script>
+    async function loadUsersList() {
+      try {
+        const res = await apiRequest("listUsers");
+        const tbody = document.getElementById("usersTableRows");
+        const users = res.users || [];
+
+        if (users.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);">لا يوجد مستخدمون مسجلون</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = users.map((u) => {
+          const isMaster = u.role === "master_admin";
+          const roleBadge = isMaster 
+            ? `<span class="role-tag-master"><i class="fa-solid fa-crown"></i> مدير عام (Master Admin)</span>`
+            : `<span class="role-tag-staff"><i class="fa-solid fa-user-check"></i> موظف شؤون طلاب</span>`;
+          
+          const isMe = u.username.toLowerCase() === currentUser?.username?.toLowerCase();
+
+          return `
+            <tr>
+              <td><strong>${escapeHtml(u.username)}</strong> ${isMe ? '<small style="color:var(--primary); font-weight:800;">(أنت)</small>' : ''}</td>
+              <td>${escapeHtml(u.fullName)}</td>
+              <td>${roleBadge}</td>
+              <td><span class="badge ${u.status === 'active' ? 'acceptedFinal' : 'rejected'}">${u.status === 'active' ? 'نشط' : 'معطل'}</span></td>
+              <td>${new Date(u.createdAt).toLocaleDateString("ar-EG")}</td>
+              <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn-details" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;" onclick="resetUserPasswordPrompt('${escapeHtml(u.username)}')">
+                  <i class="fa-solid fa-key"></i> تعيين باسورد
+                </button>
+                ${!isMe ? `
+                  <button class="btn-details btn-danger" onclick="deleteUserPrompt('${escapeHtml(u.username)}')">
+                    <i class="fa-solid fa-trash"></i> حذف
+                  </button>
+                ` : '<span style="color:var(--muted); font-size:12px; align-self:center;">الحساب الحالي</span>'}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      } catch (err) {
+        Swal.fire({ icon: "error", title: "خطأ", text: err.message });
+      }
+    }
+
+    async function openCreateUserModal() {
+      const { value: formValues } = await Swal.fire({
+        title: "إضافة مستخدم جديد للنظام",
+        html: `
+          <div style="text-align:right; font-family:'IBM Plex Sans Arabic', sans-serif;">
+            <div style="margin-bottom:12px;">
+              <label style="font-weight:700; font-size:13px;">اسم المستخدم بالإنجليزية (Username):</label>
+              <input id="swal-input-username" class="swal2-input" placeholder="مثال: ahmed_admissions" style="width:100%; margin:6px 0; font-size:14px;">
+            </div>
+            <div style="margin-bottom:12px;">
+              <label style="font-weight:700; font-size:13px;">الاسم الكامل للمستخدم بالعربية:</label>
+              <input id="swal-input-fullname" class="swal2-input" placeholder="مثال: أ/ أحمد محمد فتحي" style="width:100%; margin:6px 0; font-size:14px;">
+            </div>
+            <div style="margin-bottom:12px;">
+              <label style="font-weight:700; font-size:13px;">كلمة المرور (Password):</label>
+              <input id="swal-input-password" type="password" class="swal2-input" placeholder="كلمة المرور" style="width:100%; margin:6px 0; font-size:14px;">
+            </div>
+            <div style="margin-bottom:12px;">
+              <label style="font-weight:700; font-size:13px;">نوع الصلاحية (Role):</label>
+              <select id="swal-input-role" class="swal2-input" style="width:100%; margin:6px 0; font-size:14px; padding:8px;">
+                <option value="staff_admin">موظف شؤون طلاب (فحص، تعديل حالات، طباعة، تصدير)</option>
+                <option value="master_admin">مدير عام Master Admin (كامل الصلاحيات + إدارة المستخدمين)</option>
+              </select>
+            </div>
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: "إنشاء المستخدم",
+        cancelButtonText: "إلغاء",
+        confirmButtonColor: "#087a3c",
+        preConfirm: () => {
+          const username = document.getElementById("swal-input-username").value.trim();
+          const fullName = document.getElementById("swal-input-fullname").value.trim();
+          const password = document.getElementById("swal-input-password").value;
+          const role = document.getElementById("swal-input-role").value;
+
+          if (!username || !fullName || !password) {
+            Swal.showValidationMessage("يرجى ملء جميع الحقول المطلوبة");
+            return false;
+          }
+          return { username, fullName, password, role };
+        }
+      });
+
+      if (formValues) {
+        try {
+          const res = await apiRequest("createUser", {
+            method: "POST",
+            body: JSON.stringify(formValues),
+          });
+          Swal.fire({
+            icon: "success",
+            title: "تم بنجاح!",
+            text: res.message,
+            confirmButtonColor: "#087a3c"
+          });
+          await loadUsersList();
+        } catch (err) {
+          Swal.fire({ icon: "error", title: "فشل الإنشاء", text: err.message });
+        }
+      }
+    }
+
+    async function deleteUserPrompt(username) {
+      const confirm = await Swal.fire({
+        title: `حذف المستخدم (${username})؟`,
+        text: "لن يتمكن هذا المستخدم من تسجيل الدخول إلى النظام بعد الآن.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#b91c1c",
+        cancelButtonColor: "#62756a",
+        confirmButtonText: "نعم، قم بالحذف",
+        cancelButtonText: "إلغاء",
+      });
+
+      if (confirm.isConfirmed) {
+        try {
+          const res = await apiRequest("deleteUser", {
+            method: "POST",
+            body: JSON.stringify({ username }),
+          });
+          Swal.fire({ icon: "success", title: "تم الحذف", text: res.message, timer: 1500, showConfirmButton: false });
+          await loadUsersList();
+        } catch (err) {
+          Swal.fire({ icon: "error", title: "خطأ", text: err.message });
+        }
+      }
+    }
+
+    async function resetUserPasswordPrompt(username) {
+      const { value: formValues } = await Swal.fire({
+        title: `تعيين كلمة مرور جديدة: ${username}`,
+        html: `
+          <div style="text-align:right; font-family:'IBM Plex Sans Arabic', sans-serif;">
+            <div style="margin-bottom:12px;">
+              <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">كلمة المرور الجديدة</label>
+              <input id="swal-reset-pass" type="password" class="swal2-input" placeholder="6 أحرف على الأقل" style="text-align:right; direction:rtl;">
+            </div>
+            <div style="margin-bottom:4px;">
+              <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">تأكيد كلمة المرور</label>
+              <input id="swal-reset-confirm" type="password" class="swal2-input" placeholder="أعد إدخال كلمة المرور" style="text-align:right; direction:rtl;">
+            </div>
+          </div>`,
+        focusConfirm: false,
+        icon: 'warning',
+        confirmButtonText: 'حفظ وتعيين',
+        cancelButtonText: 'إلغاء',
+        showCancelButton: true,
+        confirmButtonColor: "#0369a1",
+        cancelButtonColor: "#6b7280",
+        preConfirm: () => {
+          const newP = document.getElementById('swal-reset-pass').value.trim();
+          const conf = document.getElementById('swal-reset-confirm').value.trim();
+          if (!newP || !conf) {
+            Swal.showValidationMessage('يرجى تعبئة الحقول.');
+            return false;
+          }
+          if (newP.length < 6) {
+            Swal.showValidationMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
+            return false;
+          }
+          if (newP !== conf) {
+            Swal.showValidationMessage('كلمتا المرور غير متطابقتين.');
+            return false;
+          }
+          return { username, newPassword: newP };
+        }
+      });
+
+      if (!formValues) return;
+      try {
+        const res = await apiRequest('resetUserPassword', {
+          method: 'POST',
+          body: JSON.stringify(formValues)
+        });
+        Swal.fire({ icon: 'success', title: 'تم بنجاح', text: res.message, timer: 2000, showConfirmButton: false });
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'خطأ', text: err.message });
+      }
+    }
+
+    // Initialize Page
+    setupLoginForm(async () => {
+      await loadUsersList();
+    });
+
+    initAdminAuth("users", async () => {
+      await loadUsersList();
+    });
+  </script>
+</body>
+</html>

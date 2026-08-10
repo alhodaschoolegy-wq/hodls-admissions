@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>الإعدادات والسياسات | H-O-D-L-S</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" type="image/png" href="logo.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons Library: FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- SweetAlert2 Library -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Unified Admin CSS -->
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+  <!-- 1. Secure Login View -->
+  <div id="loginView" class="login-container" style="display:none;">
+    <div class="login-card">
+      <div class="login-card-header">
+        <img class="mark" src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="شعار مدرسة الهُدى">
+        <h1>لوحة إدارة التنسيق والقبول</h1>
+        <p>مدرسة الهُدى الرسمية المتميزة للغات (H-O-D-L-S)</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="login-field">
+          <label for="adminUsername"><i class="fa-solid fa-user"></i> اسم المستخدم (Username)</label>
+          <input type="text" id="adminUsername" placeholder="اسم المستخدم المصرح له" required autocomplete="username" autofocus>
+        </div>
+
+        <div class="login-field">
+          <label for="adminPassword"><i class="fa-solid fa-lock"></i> كلمة المرور (Password)</label>
+          <div class="password-field-wrapper">
+            <input type="password" id="adminPassword" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" id="btnTogglePassword" class="btn-toggle-password" title="إظهار كلمة المرور">
+              <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btnLogin">
+          <i class="fa-solid fa-shield-halved"></i> دخول آمن للمنظومة (JWT Auth)
+        </button>
+        <div id="loginError" class="err-box"></div>
+
+        <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border); text-align:center;">
+          <a href="/" style="display:inline-flex; align-items:center; gap:8px; color:var(--primary-dark); font-weight:800; font-size:13px; text-decoration:none; background:#f0fdf4; padding:8px 16px; border-radius:8px; border:1px solid #c9dcd1;">
+            <i class="fa-solid fa-house"></i> العودة لبوابة الطلاب والتقديم
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Settings Page Shell -->
+  <div id="appView" class="admin-shell" style="display:none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <a href="/dashboard" class="sidebar-brand">
+          <img class="sidebar-logo" src="logo.png" onerror="this.onerror=null; this.src='school-logo.svg';" alt="HODLS">
+          <div>
+            <h2>مدرسة الهُدى</h2>
+            <small>إدارة التنسيق</small>
+          </div>
+        </a>
+
+        <nav class="sidebar-nav">
+          <a href="/dashboard" class="nav-btn" id="navDashboardBtn">
+            <i class="fa-solid fa-chart-pie"></i> <span>الرئيسية والإحصائيات</span>
+          </a>
+          <a href="/students" class="nav-btn" id="navStudentsBtn">
+            <i class="fa-solid fa-users"></i> <span>سجلات الطلاب</span>
+          </a>
+          <a href="/users" class="nav-btn" id="navUsersBtn" style="display:none;">
+            <i class="fa-solid fa-users-gear"></i> <span>إدارة المستخدمين والصلاحيات</span>
+          </a>
+          <a href="/settings" class="nav-btn active" id="navSettingsBtn">
+            <i class="fa-solid fa-sliders"></i> <span>الإعدادات والسياسات</span>
+          </a>
+          <button class="nav-btn" onclick="exportCsv()">
+            <i class="fa-solid fa-file-excel"></i> <span>تصدير Excel (CSV)</span>
+          </button>
+          <a href="/" target="_blank" class="nav-btn" style="text-decoration:none; color:#10b981; margin-top:8px; background:rgba(16,185,129,0.08);">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>بوابة الطلاب (الموقع)</span>
+          </a>
+        </nav>
+      </div>
+
+      <button class="nav-btn" onclick="logout()" style="color:#fca5a5;">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>تسجيل الخروج</span>
+      </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <div class="top-bar">
+        <div>
+          <h1><i class="fa-solid fa-sliders text-emerald"></i> الإعدادات والسياسات العامة للمنظومة</h1>
+          <small style="color:var(--muted);">العام الدراسي <span class="active-year-display">2026 / 2027</span></small>
+        </div>
+        <div class="top-bar-actions">
+          <a href="/" target="_blank" class="btn-action" style="text-decoration:none; background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;">
+            <i class="fa-solid fa-globe text-emerald"></i> عرض بوابة الطلاب
+          </a>
+          <button class="btn-action" onclick="changeMyPassword()" style="background:#fff; color:var(--primary-dark); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:8px 14px; font-size:13px;" title="تغيير كلمة مرورك الشخصية">
+            <i class="fa-solid fa-key text-emerald"></i> تغيير كلمة المرور
+          </button>
+          <div class="user-pill">
+            <i class="fa-solid fa-circle-user"></i>
+            <span id="adminLoggedUser">admin</span>
+            <span id="userRoleBadge" class="role-tag-master">مدير عام</span>
+          </div>
+          <button class="btn-logout" onclick="logout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+          </button>
+        </div>
+      </div>
+
+      <!-- Settings Layout -->
+      <div class="settings-grid-layout">
+        <!-- 1. Academic Year Config -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fa-solid fa-calendar-days text-emerald"></i> التحكم في العام الدراسي النشط</h2>
+            <span id="currentActiveYearBadge" class="badge acceptedInitial" style="font-size:13px;">2026 / 2027</span>
+          </div>
+          <p style="color:var(--muted); margin-bottom:16px; font-size:13px;">
+            تغيير العام الدراسي ينعكس فوراً على واجهة أولياء الأمور وبوابة التقديم، وإشعارات القبول، وحساب السن في 1 أكتوبر.
+          </p>
+
+          <div class="year-config-box">
+            <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+              <label style="font-weight:700; font-size:13px;">اختر أو اكتب العام الدراسي:</label>
+              <select id="academicYearPresetSelect" class="swal2-input" style="padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-weight:700;" onchange="handlePresetYearChange()">
+                <option value="2026 / 2027">2026 / 2027 (العام الافتراضي)</option>
+                <option value="2027 / 2028">2027 / 2028</option>
+                <option value="2028 / 2029">2028 / 2029</option>
+                <option value="custom">كتابة عام مخصص يدوي...</option>
+              </select>
+              <input type="text" id="academicYearInput" placeholder="مثال: 2026 / 2027" style="flex:1; min-width:200px; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-weight:700;">
+              <button class="btn-action btn-gold-action" onclick="saveAcademicYear()">
+                <i class="fa-solid fa-floppy-disk"></i> حفظ وتعميم العام الدراسي
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. School Photos Gallery Management -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fa-solid fa-images text-emerald"></i> إدارة معرض صور ومرافق المدرسة</h2>
+            <button class="btn-action" onclick="openAddPhotoModal()">
+              <i class="fa-solid fa-plus"></i> إضافة صورة جديدة للمعرض
+            </button>
+          </div>
+          <p style="color:var(--muted); margin-bottom:16px; font-size:13px;">
+            الصور المضافة هنا تظهر تلقائياً لأولياء الأمور والطلاب في بوابة التقديم في معرض الصور والمرافق.
+          </p>
+
+          <div id="schoolPhotosGridAdmin" class="photos-admin-grid"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="assets/js/adminCommon.js"></script>
+  <script>
+    function handlePresetYearChange() {
+      const sel = document.getElementById("academicYearPresetSelect").value;
+      const inp = document.getElementById("academicYearInput");
+      if (sel !== "custom") {
+        inp.value = sel;
+      } else {
+        inp.value = "";
+        inp.focus();
+      }
+    }
+
+    async function loadSettingsData() {
+      try {
+        const res = await apiRequest("getSettings");
+        const settings = res.settings || {};
+
+        const activeYear = settings.academicYear || "2026 / 2027";
+        document.getElementById("academicYearInput").value = activeYear;
+        document.getElementById("currentActiveYearBadge").textContent = activeYear;
+        
+        document.querySelectorAll(".active-year-display").forEach((el) => {
+          el.textContent = activeYear;
+        });
+
+        const presetSelect = document.getElementById("academicYearPresetSelect");
+        if (presetSelect) {
+          const matchOption = Array.from(presetSelect.options).find((o) => o.value === activeYear);
+          if (matchOption) {
+            presetSelect.value = activeYear;
+          } else {
+            presetSelect.value = "custom";
+          }
+        }
+
+        renderSchoolPhotosAdmin(settings.schoolPhotos || []);
+      } catch (err) {
+        Swal.fire({ icon: "error", title: "خطأ في تحميل الإعدادات", text: err.message });
+      }
+    }
+
+    function renderSchoolPhotosAdmin(photos) {
+      const container = document.getElementById("schoolPhotosGridAdmin");
+      if (!container) return;
+
+      if (photos.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column:1/-1; text-align:center; padding:32px; background:#f8faf9; border:1px dashed var(--border); border-radius:12px; color:var(--muted);">
+            <i class="fa-solid fa-images" style="font-size:32px; margin-bottom:8px; display:block; color:var(--primary);"></i>
+            لا توجد صور مضافة للمدرسة حالياً. اضغط على زر "إضافة صورة جديدة" بالأعلى للبدء.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = photos.map((p) => `
+        <div class="photo-admin-card">
+          <img src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.title)}" class="photo-admin-thumb" onerror="this.src='logo.png'">
+          <div class="photo-admin-info">
+            <div>
+              <div class="photo-admin-title">${escapeHtml(p.title)}</div>
+              <div class="photo-admin-meta" style="margin-top:4px;">
+                <span class="badge acceptedInitial"><i class="fa-solid fa-tag"></i> ${escapeHtml(p.category || "عام")}</span>
+                <span>${p.createdAt ? new Date(p.createdAt).toLocaleDateString("ar-EG") : ""}</span>
+              </div>
+            </div>
+            <button class="btn-details btn-danger" style="width:100%; justify-content:center; margin-top:8px;" onclick="deletePhotoPrompt('${escapeHtml(p.id)}')">
+              <i class="fa-solid fa-trash"></i> حذف الصورة
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function saveAcademicYear() {
+      const year = document.getElementById("academicYearInput").value.trim();
+      if (!year) {
+        Swal.fire({ icon: "warning", title: "تنبيه", text: "يرجى كتابة أو اختيار العام الدراسي." });
+        return;
+      }
+
+      try {
+        const res = await apiRequest("updateAcademicYear", {
+          method: "POST",
+          body: JSON.stringify({ academicYear: year }),
+        });
+
+        Swal.fire({
+          icon: "success",
+          title: "تم الحفظ والتعميم بنجاح!",
+          text: res.message,
+          confirmButtonColor: "#087a3c",
+        });
+
+        await loadSettingsData();
+      } catch (err) {
+        Swal.fire({ icon: "error", title: "فشل التحديث", text: err.message });
+      }
+    }
+
+    async function openAddPhotoModal() {
+      const { value: formValues } = await Swal.fire({
+        title: "إضافة صورة جديدة لمعرض المدرسة",
+        html: `
+          <div style="text-align:right; font-family:'IBM Plex Sans Arabic', sans-serif;">
+            <div style="margin-bottom:12px;">
+              <label style="font-weight:700; font-size:13px;">عنوان ووصف الصورة:</label>
+              <input id="swal-input-photo-title" class="swal2-input" placeholder="مثال: المعمل المتطور للغات والحاسب" style="width:100%; margin:6px 0; font-size:14px;">
+            </div>
+            <div style="margin-bottom:12px;">
+              <label style="font-weight:700; font-size:13px;">القسم أو الفئة:</label>
+              <select id="swal-input-photo-cat" class="swal2-input" style="width:100%; margin:6px 0; font-size:14px; padding:8px;">
+                <option value="المباني والمرافق">المباني والمرافق</option>
+                <option value="المعامل التكنولوجية">المعامل التكنولوجية</option>
+                <option value="الأنشطة والملاعب">الأنشطة والملاعب</option>
+                <option value="المكتبة والأنشطة">المكتبة والأنشطة</option>
+                <option value="الفصول الدراسية">الفصول الدراسية</option>
+              </select>
+            </div>
+            <div style="margin-bottom:12px;">
+              <label style="font-weight:700; font-size:13px;">رابط الصورة (Image URL / Path):</label>
+              <input id="swal-input-photo-url" class="swal2-input" placeholder="https://example.com/school-photo.jpg أو logo.png" style="width:100%; margin:6px 0; font-size:14px;">
+            </div>
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: "إضافة الصورة للمعرض",
+        cancelButtonText: "إلغاء",
+        confirmButtonColor: "#087a3c",
+        preConfirm: () => {
+          const title = document.getElementById("swal-input-photo-title").value.trim();
+          const category = document.getElementById("swal-input-photo-cat").value;
+          const imageUrl = document.getElementById("swal-input-photo-url").value.trim();
+          if (!title || !imageUrl) {
+            Swal.showValidationMessage("يرجى إدخال عنوان ورابط الصورة");
+            return false;
+          }
+          return { title, category, imageUrl };
+        }
+      });
+
+      if (formValues) {
+        try {
+          const res = await apiRequest("addSchoolPhoto", {
+            method: "POST",
+            body: JSON.stringify(formValues),
+          });
+          Swal.fire({ icon: "success", title: "تمت الإضافة بنجاح!", text: res.message, confirmButtonColor: "#087a3c" });
+          await loadSettingsData();
+        } catch (err) {
+          Swal.fire({ icon: "error", title: "خطأ", text: err.message });
+        }
+      }
+    }
+
+    async function deletePhotoPrompt(photoId) {
+      const confirm = await Swal.fire({
+        title: "حذف هذه الصورة من المعرض؟",
+        text: "لن تظهر هذه الصورة في بوابة الطلاب بعد الآن.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#b91c1c",
+        cancelButtonColor: "#62756a",
+        confirmButtonText: "نعم، احذفها",
+        cancelButtonText: "إلغاء",
+      });
+
+      if (confirm.isConfirmed) {
+        try {
+          const res = await apiRequest("deleteSchoolPhoto", {
+            method: "POST",
+            body: JSON.stringify({ id: photoId }),
+          });
+          Swal.fire({ icon: "success", title: "تم الحذف", text: res.message, timer: 1500, showConfirmButton: false });
+          await loadSettingsData();
+        } catch (err) {
+          Swal.fire({ icon: "error", title: "خطأ", text: err.message });
+        }
+      }
+    }
+
+    // Initialize Page
+    setupLoginForm(async () => {
+      await loadSettingsData();
+    });
+
+    initAdminAuth("settings", async () => {
+      await loadSettingsData();
+    });
+  </script>
+</body>
+</html>
