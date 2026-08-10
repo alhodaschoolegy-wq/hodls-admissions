@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import sanitizeHtml from "sanitize-html";
 import { Redis } from "@upstash/redis";
 
 const JWT_SECRET = process.env.SESSION_SECRET || process.env.JWT_SECRET;
@@ -21,10 +20,10 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
  */
 export function clean(input) {
   if (typeof input !== "string") return "";
-  const sanitized = sanitizeHtml(input, {
-    allowedTags: [],
-    allowedAttributes: {},
-  });
+  // Remove all HTML tags
+  let sanitized = input.replace(/<[^>]*>?/gm, "");
+  // Basic encoding of angle brackets if any slipped through
+  sanitized = sanitized.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return sanitized.trim();
 }
 
