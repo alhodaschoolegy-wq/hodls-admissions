@@ -132,6 +132,9 @@ export default async function handler(req, res) {
     if (action === "updateParentEditSettings" && req.method === "POST") {
       return await AdminController.updateParentEditSettings(req, res, authUser, body);
     }
+    if (action === "updateCategoryVisibility" && req.method === "POST") {
+      return await AdminController.updateCategoryVisibility(req, res, authUser, body);
+    }
     if (action === "addSchoolPhoto" && req.method === "POST") {
       return await AdminController.addSchoolPhoto(req, res, authUser, body);
     }

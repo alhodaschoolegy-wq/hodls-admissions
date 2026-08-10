@@ -212,7 +212,94 @@
           </div>
         </div>
 
-        <!-- 3. School Photos Gallery Management -->
+        <!-- 3. Category & Portal Sections Visibility Controller -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fa-solid fa-eye text-emerald"></i> التحكم في ظهور الأقسام وبوابة الطلاب (Master Admin)</h2>
+            <span class="badge acceptedInitial" style="font-size:13px;"><i class="fa-solid fa-shield-halved"></i> صلاحية المدير العام</span>
+          </div>
+          <p style="color:var(--muted); margin-bottom:16px; font-size:13px;">
+            يمكنك تفعيل أو إخفاء أي من أقسام المعرض أو صفحات البوابة الرئيسية عن أولياء الأمور والزوار فوراً بضغطة زر.
+          </p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+            <!-- A. Gallery Categories Visibility -->
+            <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:18px;">
+              <h3 style="font-size:14px; color:#0f172a; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-images text-emerald"></i> أقسام وفئات معرض الصور:
+              </h3>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                  <span><i class="fa-solid fa-building text-emerald" style="margin-left:6px;"></i> المباني والمرافق</span>
+                  <input type="checkbox" id="vis_cat_buildings" style="width:18px; height:18px; cursor:pointer;" checked>
+                </label>
+                <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                  <span><i class="fa-solid fa-laptop-code text-emerald" style="margin-left:6px;"></i> المعامل التكنولوجية والعلوم</span>
+                  <input type="checkbox" id="vis_cat_labs" style="width:18px; height:18px; cursor:pointer;" checked>
+                </label>
+                <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                  <span><i class="fa-solid fa-chalkboard-user text-emerald" style="margin-left:6px;"></i> الفصول الدراسية الذكية</span>
+                  <input type="checkbox" id="vis_cat_classes" style="width:18px; height:18px; cursor:pointer;" checked>
+                </label>
+                <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                  <span><i class="fa-solid fa-shapes text-emerald" style="margin-left:6px;"></i> فصول رياض الأطفال (KG)</span>
+                  <input type="checkbox" id="vis_cat_kg" style="width:18px; height:18px; cursor:pointer;" checked>
+                </label>
+                <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                  <span><i class="fa-solid fa-futbol text-emerald" style="margin-left:6px;"></i> الأنشطة والملاعب الرياضية</span>
+                  <input type="checkbox" id="vis_cat_sports" style="width:18px; height:18px; cursor:pointer;" checked>
+                </label>
+                <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                  <span><i class="fa-solid fa-masks-theater text-emerald" style="margin-left:6px;"></i> المسرح والفعاليات والتكريم</span>
+                  <input type="checkbox" id="vis_cat_theater" style="width:18px; height:18px; cursor:pointer;" checked>
+                </label>
+                <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                  <span><i class="fa-solid fa-book-bookmark text-emerald" style="margin-left:6px;"></i> المكتبة والأنشطة الثقافية</span>
+                  <input type="checkbox" id="vis_cat_library" style="width:18px; height:18px; cursor:pointer;" checked>
+                </label>
+              </div>
+            </div>
+
+            <!-- B. Portal Sections Visibility -->
+            <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:18px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <h3 style="font-size:14px; color:#0f172a; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-globe text-emerald"></i> أقسام بوابة التقديم الرئيسية:
+                </h3>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                    <span><i class="fa-solid fa-images text-emerald" style="margin-left:6px;"></i> قسم معرض الصور والمرافق (#gallery)</span>
+                    <input type="checkbox" id="vis_sec_gallery" style="width:18px; height:18px; cursor:pointer;" checked>
+                  </label>
+                  <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                    <span><i class="fa-solid fa-clipboard-list text-emerald" style="margin-left:6px;"></i> قسم شروط وقواعد القبول والسن (#rules)</span>
+                    <input type="checkbox" id="vis_sec_rules" style="width:18px; height:18px; cursor:pointer;" checked>
+                  </label>
+                  <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                    <span><i class="fa-solid fa-file-signature text-emerald" style="margin-left:6px;"></i> نموذج التقديم والتسجيل الجديد (#registration)</span>
+                    <input type="checkbox" id="vis_sec_registration" style="width:18px; height:18px; cursor:pointer;" checked>
+                  </label>
+                  <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                    <span><i class="fa-solid fa-magnifying-glass text-emerald" style="margin-left:6px;"></i> قسم متابعة واستعلام حالة الطلب (#tracking)</span>
+                    <input type="checkbox" id="vis_sec_tracking" style="width:18px; height:18px; cursor:pointer;" checked>
+                  </label>
+                  <label style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;">
+                    <span><i class="fa-solid fa-phone text-emerald" style="margin-left:6px;"></i> معلومات التواصل والدعم الفني (#contact)</span>
+                    <input type="checkbox" id="vis_sec_contact" style="width:18px; height:18px; cursor:pointer;" checked>
+                  </label>
+                </div>
+              </div>
+
+              <div style="margin-top:16px;">
+                <button class="btn-action btn-gold-action" style="width:100%; height:46px; justify-content:center; font-size:14px;" onclick="saveVisibilitySettings()">
+                  <i class="fa-solid fa-floppy-disk"></i> حفظ ونشر إعدادات الظهور للجمهور
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. School Photos Gallery Management -->
         <div class="panel">
           <div class="panel-header">
             <h2><i class="fa-solid fa-images text-emerald"></i> إدارة معرض صور ومرافق المدرسة</h2>
@@ -281,10 +368,73 @@
           deadlineInput.value = localStr;
         }
 
+        bindVisibilityToggles(settings);
         updateGracePeriodPreview();
         renderSchoolPhotosAdmin(settings.schoolPhotos || []);
       } catch (err) {
         Swal.fire({ icon: "error", title: "خطأ في تحميل الإعدادات", text: err.message });
+      }
+    }
+
+    function bindVisibilityToggles(settings) {
+      const catVis = settings.categoryVisibility || {};
+      const secVis = settings.sectionVisibility || {};
+
+      const setCheck = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.checked = val !== false;
+      };
+
+      setCheck("vis_cat_buildings", catVis["المباني والمرافق"]);
+      setCheck("vis_cat_labs", catVis["المعامل التكنولوجية"]);
+      setCheck("vis_cat_classes", catVis["الفصول الدراسية"]);
+      setCheck("vis_cat_kg", catVis["رياض الأطفال"]);
+      setCheck("vis_cat_sports", catVis["الأنشطة والملاعب"]);
+      setCheck("vis_cat_theater", catVis["المسرح والفعاليات"]);
+      setCheck("vis_cat_library", catVis["المكتبة والثقافة"]);
+
+      setCheck("vis_sec_gallery", secVis.gallery);
+      setCheck("vis_sec_rules", secVis.rules);
+      setCheck("vis_sec_registration", secVis.registration);
+      setCheck("vis_sec_tracking", secVis.tracking);
+      setCheck("vis_sec_contact", secVis.contact);
+    }
+
+    async function saveVisibilitySettings() {
+      const categoryVisibility = {
+        "المباني والمرافق": document.getElementById("vis_cat_buildings")?.checked !== false,
+        "المعامل التكنولوجية": document.getElementById("vis_cat_labs")?.checked !== false,
+        "الفصول الدراسية": document.getElementById("vis_cat_classes")?.checked !== false,
+        "رياض الأطفال": document.getElementById("vis_cat_kg")?.checked !== false,
+        "الأنشطة والملاعب": document.getElementById("vis_cat_sports")?.checked !== false,
+        "المسرح والفعاليات": document.getElementById("vis_cat_theater")?.checked !== false,
+        "المكتبة والثقافة": document.getElementById("vis_cat_library")?.checked !== false,
+      };
+
+      const sectionVisibility = {
+        gallery: document.getElementById("vis_sec_gallery")?.checked !== false,
+        rules: document.getElementById("vis_sec_rules")?.checked !== false,
+        registration: document.getElementById("vis_sec_registration")?.checked !== false,
+        tracking: document.getElementById("vis_sec_tracking")?.checked !== false,
+        contact: document.getElementById("vis_sec_contact")?.checked !== false,
+      };
+
+      try {
+        const res = await apiRequest("updateCategoryVisibility", {
+          method: "POST",
+          body: JSON.stringify({ categoryVisibility, sectionVisibility }),
+        });
+
+        Swal.fire({
+          icon: "success",
+          title: "تم الحفظ والتعميم بنجاح!",
+          text: res.message,
+          timer: 1800,
+          showConfirmButton: false,
+          confirmButtonColor: "#087a3c"
+        });
+      } catch (err) {
+        Swal.fire({ icon: "error", title: "خطأ في الحفظ", text: err.message });
       }
     }
 

@@ -44,6 +44,22 @@ export const MEMORY_STATE = {
     parentEditsEnabled: true,
     parentEditDeadline: "2026-08-31T23:59:59.000Z",
     schoolName: "مدرسة الهُدى الرسمية المتميزة للغات",
+    categoryVisibility: {
+      "المباني والمرافق": true,
+      "المعامل التكنولوجية": true,
+      "الفصول الدراسية": true,
+      "رياض الأطفال": true,
+      "الأنشطة والملاعب": true,
+      "المسرح والفعاليات": true,
+      "المكتبة والثقافة": true,
+    },
+    sectionVisibility: {
+      gallery: true,
+      rules: true,
+      registration: true,
+      tracking: true,
+      contact: true,
+    },
     schoolPhotos: [
       {
         id: "photo-1",

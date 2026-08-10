@@ -269,6 +269,8 @@ export class AdminController {
         currentSettings.academicYearStart = data.academic_year_start || currentSettings.academicYearStart;
         currentSettings.parentEditsEnabled = data.parent_edits_enabled !== undefined ? Boolean(data.parent_edits_enabled) : true;
         currentSettings.parentEditDeadline = data.parent_edit_deadline || currentSettings.parentEditDeadline;
+        if (data.category_visibility) currentSettings.categoryVisibility = data.category_visibility;
+        if (data.section_visibility) currentSettings.sectionVisibility = data.section_visibility;
         if (Array.isArray(data.school_photos) && data.school_photos.length > 0) {
           currentSettings.schoolPhotos = data.school_photos;
         } else {
@@ -295,8 +297,56 @@ export class AdminController {
         remainingDays,
         isExpired,
         canParentEdit,
+        categoryVisibility: currentSettings.categoryVisibility || {
+          "المباني والمرافق": true,
+          "المعامل التكنولوجية": true,
+          "الفصول الدراسية": true,
+          "رياض الأطفال": true,
+          "الأنشطة والملاعب": true,
+          "المسرح والفعاليات": true,
+          "المكتبة والثقافة": true,
+        },
+        sectionVisibility: currentSettings.sectionVisibility || {
+          gallery: true,
+          rules: true,
+          registration: true,
+          tracking: true,
+          contact: true,
+        },
         schoolPhotos: currentSettings.schoolPhotos || [],
       },
+    });
+  }
+
+  /**
+   * Update Category & Section Visibility (Master Admin only)
+   */
+  static async updateCategoryVisibility(req, res, authUser, body) {
+    if (authUser.role !== "master_admin") {
+      return res.status(403).json({ success: false, message: "صلاحية المدير العام فقط." });
+    }
+
+    const categoryVisibility = body.categoryVisibility || MEMORY_STATE.settings.categoryVisibility;
+    const sectionVisibility = body.sectionVisibility || MEMORY_STATE.settings.sectionVisibility;
+
+    const supabase = getSupabase();
+    if (supabase) {
+      await supabase.from("school_settings").upsert({
+        id: "current_settings",
+        category_visibility: categoryVisibility,
+        section_visibility: sectionVisibility,
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    MEMORY_STATE.settings.categoryVisibility = categoryVisibility;
+    MEMORY_STATE.settings.sectionVisibility = sectionVisibility;
+
+    return res.status(200).json({
+      success: true,
+      message: "تم حفظ وتحديث إعدادات ظهور الأقسام للجمهور بنجاح.",
+      categoryVisibility,
+      sectionVisibility,
     });
   }
 

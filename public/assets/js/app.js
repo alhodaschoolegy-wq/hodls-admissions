@@ -925,8 +925,12 @@
       const container = document.getElementById("schoolPhotosGalleryGrid");
       if (!container) return;
 
-      const photos = (appSettings.schoolPhotos && appSettings.schoolPhotos.length > 0) ? appSettings.schoolPhotos : DEFAULT_SCHOOL_PHOTOS;
-      const filtered = category === "all" ? photos : photos.filter((p) => p.category === category);
+      const categoryVisibility = appSettings.categoryVisibility || {};
+      const allPhotos = (appSettings.schoolPhotos && appSettings.schoolPhotos.length > 0) ? appSettings.schoolPhotos : DEFAULT_SCHOOL_PHOTOS;
+      
+      // Filter by active categories enabled by Admin
+      const visiblePhotos = allPhotos.filter((p) => categoryVisibility[p.category] !== false);
+      const filtered = category === "all" ? visiblePhotos : visiblePhotos.filter((p) => p.category === category);
 
       if (filtered.length === 0) {
         container.innerHTML = `
@@ -993,6 +997,8 @@
         appSettings.parentEditDeadline = serverSettings.parentEditDeadline;
         appSettings.remainingDays = serverSettings.remainingDays;
         appSettings.canParentEdit = serverSettings.canParentEdit;
+        if (serverSettings.categoryVisibility) appSettings.categoryVisibility = serverSettings.categoryVisibility;
+        if (serverSettings.sectionVisibility) appSettings.sectionVisibility = serverSettings.sectionVisibility;
 
         if (Array.isArray(serverSettings.schoolPhotos) && serverSettings.schoolPhotos.length > 0) {
           appSettings.schoolPhotos = serverSettings.schoolPhotos;
@@ -1006,6 +1012,40 @@
         document.querySelectorAll(".dynamic-academic-year").forEach((el) => {
           el.textContent = appSettings.academicYear || "2026 / 2027";
         });
+
+        // Apply Gallery Category Visibility to Filter Tabs
+        if (appSettings.categoryVisibility) {
+          document.querySelectorAll(".gallery-filter-btn").forEach((btn) => {
+            const onclickAttr = btn.getAttribute("onclick") || "";
+            for (const [catName, isVisible] of Object.entries(appSettings.categoryVisibility)) {
+              if (onclickAttr.includes(`'${catName}'`)) {
+                btn.style.display = isVisible ? "" : "none";
+              }
+            }
+          });
+        }
+
+        // Apply Section Visibility to Landing Page Sections & Nav Links
+        if (appSettings.sectionVisibility) {
+          const secVis = appSettings.sectionVisibility;
+          const sectionMap = {
+            gallery: document.getElementById("gallery"),
+            rules: document.getElementById("rules"),
+            registration: document.getElementById("registration"),
+            tracking: document.getElementById("tracking"),
+            contact: document.getElementById("contact")
+          };
+
+          for (const [key, el] of Object.entries(sectionMap)) {
+            if (el && secVis[key] !== undefined) {
+              el.style.display = secVis[key] ? "" : "none";
+            }
+            const navLink = document.querySelector(`.nav-links a[href="#${key}"]`);
+            if (navLink && secVis[key] !== undefined) {
+              navLink.style.display = secVis[key] ? "" : "none";
+            }
+          }
+        }
 
         // Automatically update Registration Page Grace Period Notice
         const regBanner = document.getElementById("registrationGracePeriodNotice");
@@ -1058,6 +1098,12 @@
             }
           }
         }
+
+        window.renderSchoolPhotosGallery("all");
+      } catch (err) {
+        console.error("Failed to load settings:", err);
+      }
+    }
 
         window.renderSchoolPhotosGallery("all");
       } catch (err) {
