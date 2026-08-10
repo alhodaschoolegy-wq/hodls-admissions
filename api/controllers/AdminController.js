@@ -382,10 +382,10 @@ export class AdminController {
 
     const title = clean(body.title);
     const category = clean(body.category) || "المرافق العامة";
-    const imageUrl = clean(body.imageUrl);
+    const imageUrl = String(body.imageUrl || "").trim();
 
     if (!title || !imageUrl) {
-      return res.status(400).json({ success: false, message: "عنوان الصورة ورابطها مطلوبان." });
+      return res.status(400).json({ success: false, message: "عنوان الصورة ورابطها أو ملفها مطلوبان." });
     }
 
     const newPhoto = {
@@ -397,11 +397,13 @@ export class AdminController {
     };
 
     const supabase = getSupabase();
-    let currentPhotos = MEMORY_STATE.settings.schoolPhotos;
+    let currentPhotos = [...MEMORY_STATE.settings.schoolPhotos];
 
     if (supabase) {
       const { data } = await supabase.from("school_settings").select("school_photos").eq("id", "current_settings").maybeSingle();
-      if (data && Array.isArray(data.school_photos)) currentPhotos = data.school_photos;
+      if (data && Array.isArray(data.school_photos) && data.school_photos.length > 0) {
+        currentPhotos = data.school_photos;
+      }
       currentPhotos.unshift(newPhoto);
 
       await supabase.from("school_settings").upsert({
@@ -425,7 +427,7 @@ export class AdminController {
       return res.status(403).json({ success: false, message: "صلاحية المدير العام فقط." });
     }
 
-    const photoId = clean(body.photoId);
+    const photoId = clean(body.photoId || body.id);
     if (!photoId) return res.status(400).json({ success: false, message: "معرف الصورة مطلوب." });
 
     const supabase = getSupabase();

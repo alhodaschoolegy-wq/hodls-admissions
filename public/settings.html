@@ -384,42 +384,149 @@
       }
     }
 
+    let uploadedImageBase64 = "";
+
+    function compressAndReadImage(file) {
+      return new Promise((resolve, reject) => {
+        if (!file.type.startsWith("image/")) {
+          return reject(new Error("يرجى اختيار ملف صورة صالح (JPG, PNG, WebP)."));
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+            const maxDim = 1200;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+            resolve(dataUrl);
+          };
+          img.onerror = () => reject(new Error("تعذر قراءة ملف الصورة."));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error("خطأ أثناء قراءة الملف."));
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function openAddPhotoModal() {
+      uploadedImageBase64 = "";
+
       const { value: formValues } = await Swal.fire({
-        title: "إضافة صورة جديدة لمعرض المدرسة",
+        title: '<i class="fa-solid fa-cloud-arrow-up text-emerald"></i> إضافة صورة جديدة للمعرض',
         html: `
-          <div style="text-align:right; font-family:'IBM Plex Sans Arabic', sans-serif;">
-            <div style="margin-bottom:12px;">
-              <label style="font-weight:700; font-size:13px;">عنوان ووصف الصورة:</label>
-              <input id="swal-input-photo-title" class="swal2-input" placeholder="مثال: المعمل المتطور للغات والحاسب" style="width:100%; margin:6px 0; font-size:14px;">
+          <div style="text-align:right; font-family:'IBM Plex Sans Arabic', sans-serif; font-size:13px;">
+            <!-- Drag & Drop Upload Zone -->
+            <div style="margin-bottom:14px;">
+              <label style="font-weight:700; display:block; margin-bottom:6px;">
+                <i class="fa-solid fa-image text-emerald"></i> رفع الصورة (Drag & Drop أو تصفح):
+              </label>
+              
+              <div id="dropzoneBox" style="border:2px dashed #087a3c; border-radius:12px; padding:20px; text-align:center; background:#f0fdf4; cursor:pointer; transition:all .3s ease;" onclick="document.getElementById('photoFileInput').click()">
+                <input type="file" id="photoFileInput" accept="image/*" style="display:none;" onchange="handlePhotoFileSelect(this.files[0])">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size:36px; color:#087a3c; margin-bottom:8px; display:block;"></i>
+                <strong style="color:#04381e; display:block; margin-bottom:4px;">اسحب وأفلت الصورة هنا أو اضغط للاختيار من جهازك</strong>
+                <small style="color:#62756a;">يدعم ملفات JPG و PNG و WebP حتى حجم 10MB</small>
+              </div>
+
+              <!-- Live Preview Box (Hidden by default) -->
+              <div id="photoPreviewContainer" style="display:none; margin-top:10px; text-align:center; background:#fff; border:1px solid var(--border); border-radius:10px; padding:10px;">
+                <img id="photoPreviewImg" src="" style="max-height:160px; max-width:100%; border-radius:8px; object-fit:cover; display:block; margin:0 auto 8px; box-shadow:var(--shadow-sm);">
+                <button type="button" class="btn-details btn-danger" style="margin:0 auto; font-size:12px;" onclick="resetPhotoUpload(event)">
+                  <i class="fa-solid fa-trash"></i> إزالة / اختيار صورة أخرى
+                </button>
+              </div>
             </div>
+
             <div style="margin-bottom:12px;">
-              <label style="font-weight:700; font-size:13px;">القسم أو الفئة:</label>
-              <select id="swal-input-photo-cat" class="swal2-input" style="width:100%; margin:6px 0; font-size:14px; padding:8px;">
+              <label style="font-weight:700; display:block; margin-bottom:4px;">عنوان ووصف الصورة:</label>
+              <input id="swal-input-photo-title" class="swal2-input" placeholder="مثال: المعمل المتطور للغات والحاسب" style="width:100%; margin:0; font-size:13.5px; padding:10px;">
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <label style="font-weight:700; display:block; margin-bottom:4px;">القسم أو الفئة:</label>
+              <select id="swal-input-photo-cat" class="swal2-input" style="width:100%; margin:0; font-size:13.5px; padding:10px;">
                 <option value="المباني والمرافق">المباني والمرافق</option>
                 <option value="المعامل التكنولوجية">المعامل التكنولوجية</option>
-                <option value="الأنشطة والملاعب">الأنشطة والملاعب</option>
-                <option value="المكتبة والأنشطة">المكتبة والأنشطة</option>
                 <option value="الفصول الدراسية">الفصول الدراسية</option>
+                <option value="رياض الأطفال">رياض الأطفال (KG)</option>
+                <option value="الأنشطة والملاعب">الأنشطة والملاعب</option>
+                <option value="المسرح والفعاليات">المسرح والفعاليات</option>
+                <option value="المكتبة والثقافة">المكتبة والثقافة</option>
               </select>
             </div>
-            <div style="margin-bottom:12px;">
-              <label style="font-weight:700; font-size:13px;">رابط الصورة (Image URL / Path):</label>
-              <input id="swal-input-photo-url" class="swal2-input" placeholder="https://example.com/school-photo.jpg أو logo.png" style="width:100%; margin:6px 0; font-size:14px;">
+
+            <div style="margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:10px;">
+              <details>
+                <summary style="cursor:pointer; color:#087a3c; font-weight:700; font-size:12px;">
+                  <i class="fa-solid fa-link"></i> أو استخدم رابط صورة مباشر (URL اختياري)
+                </summary>
+                <input id="swal-input-photo-url" class="swal2-input" placeholder="https://example.com/photo.jpg" style="width:100%; margin-top:8px; font-size:13px; padding:8px;" oninput="handleUrlInput(this.value)">
+              </details>
             </div>
           </div>
         `,
+        didOpen: () => {
+          const dropzone = document.getElementById("dropzoneBox");
+          if (!dropzone) return;
+
+          ["dragenter", "dragover"].forEach((eventName) => {
+            dropzone.addEventListener(eventName, (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              dropzone.style.background = "#dcfce7";
+              dropzone.style.borderColor = "#15803d";
+            });
+          });
+
+          ["dragleave", "drop"].forEach((eventName) => {
+            dropzone.addEventListener(eventName, (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              dropzone.style.background = "#f0fdf4";
+              dropzone.style.borderColor = "#087a3c";
+            });
+          });
+
+          dropzone.addEventListener("drop", async (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+              await window.handlePhotoFileSelect(files[0]);
+            }
+          });
+        },
         focusConfirm: false,
         showCancelButton: true,
-        confirmButtonText: "إضافة الصورة للمعرض",
+        confirmButtonText: '<i class="fa-solid fa-check"></i> حفظ الصورة في المعرض',
         cancelButtonText: "إلغاء",
         confirmButtonColor: "#087a3c",
         preConfirm: () => {
           const title = document.getElementById("swal-input-photo-title").value.trim();
           const category = document.getElementById("swal-input-photo-cat").value;
-          const imageUrl = document.getElementById("swal-input-photo-url").value.trim();
-          if (!title || !imageUrl) {
-            Swal.showValidationMessage("يرجى إدخال عنوان ورابط الصورة");
+          const urlInput = document.getElementById("swal-input-photo-url")?.value.trim();
+          const imageUrl = uploadedImageBase64 || urlInput;
+
+          if (!title) {
+            Swal.showValidationMessage("يرجى كتابة عنوان أو وصف للصورة");
+            return false;
+          }
+          if (!imageUrl) {
+            Swal.showValidationMessage("يرجى سحب وإفلات صورة أو إدخال رابط الصورة");
             return false;
           }
           return { title, category, imageUrl };
@@ -432,13 +539,60 @@
             method: "POST",
             body: JSON.stringify(formValues),
           });
-          Swal.fire({ icon: "success", title: "تمت الإضافة بنجاح!", text: res.message, confirmButtonColor: "#087a3c" });
+          Swal.fire({ icon: "success", title: "تمت إضافة الصورة بنجاح!", text: res.message, timer: 1800, showConfirmButton: false });
           await loadSettingsData();
         } catch (err) {
-          Swal.fire({ icon: "error", title: "خطأ", text: err.message });
+          Swal.fire({ icon: "error", title: "خطأ في الإضافة", text: err.message });
         }
       }
     }
+
+    window.handlePhotoFileSelect = async function(file) {
+      if (!file) return;
+      try {
+        const compressedBase64 = await compressAndReadImage(file);
+        uploadedImageBase64 = compressedBase64;
+
+        const dropzone = document.getElementById("dropzoneBox");
+        const previewContainer = document.getElementById("photoPreviewContainer");
+        const previewImg = document.getElementById("photoPreviewImg");
+        const titleInput = document.getElementById("swal-input-photo-title");
+
+        if (dropzone) dropzone.style.display = "none";
+        if (previewContainer) previewContainer.style.display = "block";
+        if (previewImg) previewImg.src = compressedBase64;
+
+        if (titleInput && !titleInput.value) {
+          const rawName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+          titleInput.value = rawName;
+        }
+      } catch (err) {
+        Swal.showValidationMessage(err.message || "فشل معالجة الصورة.");
+      }
+    };
+
+    window.resetPhotoUpload = function(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      uploadedImageBase64 = "";
+      const fileInput = document.getElementById("photoFileInput");
+      if (fileInput) fileInput.value = "";
+
+      const dropzone = document.getElementById("dropzoneBox");
+      const previewContainer = document.getElementById("photoPreviewContainer");
+      if (dropzone) dropzone.style.display = "block";
+      if (previewContainer) previewContainer.style.display = "none";
+    };
+
+    window.handleUrlInput = function(val) {
+      if (val && val.startsWith("http")) {
+        const previewContainer = document.getElementById("photoPreviewContainer");
+        const previewImg = document.getElementById("photoPreviewImg");
+        const dropzone = document.getElementById("dropzoneBox");
+        if (dropzone) dropzone.style.display = "none";
+        if (previewContainer) previewContainer.style.display = "block";
+        if (previewImg) previewImg.src = val;
+      }
+    };
 
     async function deletePhotoPrompt(photoId) {
       const confirm = await Swal.fire({
@@ -456,7 +610,7 @@
         try {
           const res = await apiRequest("deleteSchoolPhoto", {
             method: "POST",
-            body: JSON.stringify({ id: photoId }),
+            body: JSON.stringify({ photoId: photoId, id: photoId }),
           });
           Swal.fire({ icon: "success", title: "تم الحذف", text: res.message, timer: 1500, showConfirmButton: false });
           await loadSettingsData();
