@@ -186,6 +186,20 @@
           <p>يرجى كتابة كافة البيانات بعناية ودقة تامة وفقاً لشهادة الميلاد وبطاقة ولي الأمر.</p>
         </div>
 
+        <!-- Automated Parent Edit Grace Period Banner -->
+        <div id="registrationGracePeriodNotice" class="alert-box" style="display:none; max-width:860px; margin:0 auto 24px; background:rgba(8,122,60,0.08); border:1px solid rgba(8,122,60,0.25); color:#04381e; padding:12px 18px; border-radius:12px; box-shadow:var(--shadow-sm);">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <i class="fa-solid fa-clock-rotate-left text-emerald" style="font-size:20px;"></i>
+              <div>
+                <strong style="display:block; font-size:13.5px;" id="regGracePeriodTitle">فترة السماح بتعديل بيانات الطلب: متاحة</strong>
+                <small id="regGracePeriodDesc" style="color:#2d503b; font-size:12px;">يحق لولي الأمر تعديل بيانات الاستمارة بعد التقديم حتى <span id="regGracePeriodDeadlineDate">—</span> (متبقي <strong id="regGracePeriodRemainingDays">—</strong> يوماً).</small>
+              </div>
+            </div>
+            <span class="badge acceptedInitial" id="regGracePeriodBadge" style="font-size:12px;"><i class="fa-solid fa-hourglass-half"></i> متبقي — يوم</span>
+          </div>
+        </div>
+
         <div class="wizard-wrapper">
           <!-- Wizard Top Banner & Stepper -->
           <div class="wizard-header">
@@ -406,6 +420,11 @@
 
                 <!-- Review Content -->
                 <div id="reviewSummary"></div>
+
+                <div id="step5GracePeriodBox" style="margin-top:16px; padding:12px 16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; font-size:13px; color:#166534; display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-circle-check text-emerald" style="font-size:16px;"></i>
+                  <span id="step5GracePeriodText">اطمئن، يحق لولي الأمر تعديل أي من هذه البيانات لاحقاً برقم الطلب خلال فترة السماح المتاحة.</span>
+                </div>
 
                 <div class="wizard-footer">
                   <button type="button" class="btn btn-outline btn-step-prev"><i class="fa-solid fa-pen-to-square"></i> تعديل البيانات</button>

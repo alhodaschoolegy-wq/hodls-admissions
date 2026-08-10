@@ -894,6 +894,58 @@
           el.textContent = appSettings.academicYear || "2026 / 2027";
         });
 
+        // Automatically update Registration Page Grace Period Notice
+        const regBanner = document.getElementById("registrationGracePeriodNotice");
+        const step5Box = document.getElementById("step5GracePeriodBox");
+        const step5Text = document.getElementById("step5GracePeriodText");
+
+        if (regBanner) {
+          if (appSettings.canParentEdit) {
+            regBanner.style.display = "block";
+            const deadlineDate = new Date(appSettings.parentEditDeadline || "2026-08-31T23:59:59Z");
+            const dateFormatted = deadlineDate.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+            
+            const dateEl = document.getElementById("regGracePeriodDeadlineDate");
+            if (dateEl) dateEl.textContent = dateFormatted;
+
+            const remEl = document.getElementById("regGracePeriodRemainingDays");
+            if (remEl) remEl.textContent = appSettings.remainingDays;
+
+            const badgeEl = document.getElementById("regGracePeriodBadge");
+            if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-hourglass-half"></i> متبقي ${appSettings.remainingDays} يوم`;
+
+            if (step5Text) {
+              step5Text.textContent = `اطمئن، يحق لولي الأمر تعديل أي من هذه البيانات لاحقاً برقم الطلب حتى ${dateFormatted} (متبقي ${appSettings.remainingDays} يوماً).`;
+            }
+          } else {
+            regBanner.style.display = "block";
+            regBanner.style.background = "rgba(100,116,139,0.08)";
+            regBanner.style.borderColor = "rgba(100,116,139,0.25)";
+            regBanner.style.color = "#475569";
+            
+            const titleEl = document.getElementById("regGracePeriodTitle");
+            if (titleEl) titleEl.textContent = "تنبيه: فترة تعديل البيانات بعد التقديم مغلقة حالياً";
+
+            const descEl = document.getElementById("regGracePeriodDesc");
+            if (descEl) descEl.textContent = "يرجى مراجعة وتدقيق كافة البيانات بدقة تامة، حيث لا يُسمح بالتعديل بعد التسجيل إلا من خلال إدارة المدرسة.";
+
+            const badgeEl = document.getElementById("regGracePeriodBadge");
+            if (badgeEl) {
+              badgeEl.className = "badge rejected";
+              badgeEl.innerHTML = `<i class="fa-solid fa-lock"></i> التعديل مغلق`;
+            }
+
+            if (step5Box) {
+              step5Box.style.background = "#fffbeb";
+              step5Box.style.borderColor = "#fde68a";
+              step5Box.style.color = "#92400e";
+            }
+            if (step5Text) {
+              step5Text.textContent = "تنبيه: فترة التعديل بعد التسجيل مغلقة حالياً، يرجى التأكد التام من صحة البيانات المسجلة قبل الإرسال النهائي.";
+            }
+          }
+        }
+
         window.renderSchoolPhotosGallery("all");
       } catch (err) {
         console.error("Failed to load settings:", err);
