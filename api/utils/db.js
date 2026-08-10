@@ -47,43 +47,64 @@ export const MEMORY_STATE = {
     schoolPhotos: [
       {
         id: "photo-1",
-        title: "المبنى المدرسي والفناء الرئيسي",
+        title: "المبنى المدرسي والواجهة الرئيسية لمدرسة الهُدى",
         category: "المباني والمرافق",
         imageUrl: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1200&q=80",
         createdAt: new Date().toISOString()
       },
       {
         id: "photo-2",
-        title: "معامل الحاسب الآلي والوسائط المتعددة",
-        category: "المعامل التكنولوجية",
+        title: "فناء الطابور الصباحي والمساحات الخضراء والأنشطة",
+        category: "المباني والمرافق",
         imageUrl: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80",
         createdAt: new Date().toISOString()
       },
       {
         id: "photo-3",
-        title: "الملاعب الرياضية ومساحات الأنشطة",
-        category: "الأنشطة والملاعب",
-        imageUrl: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80",
+        title: "معامل الحاسب الآلي والبرمجة والروبوتيكس المتطورة",
+        category: "المعامل التكنولوجية",
+        imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
         createdAt: new Date().toISOString()
       },
       {
         id: "photo-4",
-        title: "المسرح المدرسي وقاعة الفعاليات",
-        category: "المسرح والفعاليات",
-        imageUrl: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+        title: "معامل العلوم والاستكشاف وتجارب الكيمياء والأحياء",
+        category: "المعامل التكنولوجية",
+        imageUrl: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=80",
         createdAt: new Date().toISOString()
       },
       {
         id: "photo-5",
-        title: "الفصول النموذجية والتعليم التفاعلي",
+        title: "الفصول الدراسية الذكية والشاشات التفاعلية الحديثة",
         category: "الفصول الدراسية",
         imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80",
         createdAt: new Date().toISOString()
       },
       {
         id: "photo-6",
-        title: "المكتبة المدرسية ومركز مصادر التعلم",
-        category: "المكتبة والبحث",
+        title: "فصول رياض الأطفال والأنشطة الإبداعية والتعليم المبكر",
+        category: "رياض الأطفال",
+        imageUrl: "https://images.unsplash.com/photo-1587691592099-24045742c181?auto=format&fit=crop&w=1200&q=80",
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: "photo-7",
+        title: "الملاعب الرياضية المتعددة وملاعب كرة القدم والسلة",
+        category: "الأنشطة والملاعب",
+        imageUrl: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80",
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: "photo-8",
+        title: "المسرح المدرسي وقاعة الاحتفالات وتكريم الطلاب المتفوقين",
+        category: "المسرح والفعاليات",
+        imageUrl: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: "photo-9",
+        title: "المكتبة المدرسية الشاملة ومركز مصادر التعلم والبحث",
+        category: "المكتبة والثقافة",
         imageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80",
         createdAt: new Date().toISOString()
       }
