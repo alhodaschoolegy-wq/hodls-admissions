@@ -3,7 +3,7 @@
  */
 export class ApiService {
   static get BASE_URL() {
-    return "/.netlify/functions/api";
+    return "/api";
   }
 
   static async request(action, options = {}) {
