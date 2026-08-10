@@ -20,6 +20,55 @@
 
   <!-- Unified Admin CSS -->
   <link rel="stylesheet" href="assets/css/admin.css">
+
+  <style>
+    .swal-cat-chip {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+    .swal-cat-chip:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      transform: translateY(-1px);
+    }
+    .swal-cat-chip.active {
+      background: linear-gradient(135deg, #087a3c, #0b9e4f);
+      color: #ffffff;
+      border-color: #087a3c;
+      box-shadow: 0 4px 10px rgba(8, 122, 60, 0.25);
+    }
+    .custom-swal-input {
+      width: 100%;
+      height: 42px;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 13.5px;
+      color: #1e293b;
+      padding: 0 14px;
+      outline: none;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    .custom-swal-input:focus, #swal-input-photo-cat:focus {
+      border-color: #087a3c !important;
+      background: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(8, 122, 60, 0.15) !important;
+    }
+  </style>
 </head>
 <body>
 
@@ -452,22 +501,58 @@
               </div>
             </div>
 
-            <div style="margin-bottom:12px;">
-              <label style="font-weight:700; display:block; margin-bottom:4px;">عنوان ووصف الصورة:</label>
-              <input id="swal-input-photo-title" class="swal2-input" placeholder="مثال: المعمل المتطور للغات والحاسب" style="width:100%; margin:0; font-size:13.5px; padding:10px;">
+            <!-- Title Input -->
+            <div style="margin-bottom:14px;">
+              <label style="font-weight:700; display:block; margin-bottom:6px; color:#04381e;">
+                <i class="fa-solid fa-heading text-emerald"></i> عنوان ووصف الصورة:
+              </label>
+              <input id="swal-input-photo-title" class="custom-swal-input" placeholder="مثال: المعمل المتطور للغات والوسائط المتعددة">
             </div>
 
-            <div style="margin-bottom:12px;">
-              <label style="font-weight:700; display:block; margin-bottom:4px;">القسم أو الفئة:</label>
-              <select id="swal-input-photo-cat" class="swal2-input" style="width:100%; margin:0; font-size:13.5px; padding:10px;">
-                <option value="المباني والمرافق">المباني والمرافق</option>
-                <option value="المعامل التكنولوجية">المعامل التكنولوجية</option>
-                <option value="الفصول الدراسية">الفصول الدراسية</option>
-                <option value="رياض الأطفال">رياض الأطفال (KG)</option>
-                <option value="الأنشطة والملاعب">الأنشطة والملاعب</option>
-                <option value="المسرح والفعاليات">المسرح والفعاليات</option>
-                <option value="المكتبة والثقافة">المكتبة والثقافة</option>
-              </select>
+            <!-- Category Section with Visual Chips and Dropdown -->
+            <div style="margin-bottom:14px;">
+              <label style="font-weight:700; display:block; margin-bottom:8px; color:#04381e;">
+                <i class="fa-solid fa-layer-group text-emerald"></i> القسم أو الفئة (اختر بالضغط مباشرة أو من القائمة):
+              </label>
+              
+              <!-- Quick Select Badges / Chips -->
+              <div id="catChipsContainer" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                <button type="button" class="swal-cat-chip active" data-cat="المباني والمرافق" onclick="selectModalCategory('المباني والمرافق')">
+                  <i class="fa-solid fa-building"></i> المباني والمرافق
+                </button>
+                <button type="button" class="swal-cat-chip" data-cat="المعامل التكنولوجية" onclick="selectModalCategory('المعامل التكنولوجية')">
+                  <i class="fa-solid fa-laptop-code"></i> المعامل والعلوم
+                </button>
+                <button type="button" class="swal-cat-chip" data-cat="الفصول الدراسية" onclick="selectModalCategory('الفصول الدراسية')">
+                  <i class="fa-solid fa-chalkboard-user"></i> الفصول الذكية
+                </button>
+                <button type="button" class="swal-cat-chip" data-cat="رياض الأطفال" onclick="selectModalCategory('رياض الأطفال')">
+                  <i class="fa-solid fa-shapes"></i> رياض الأطفال (KG)
+                </button>
+                <button type="button" class="swal-cat-chip" data-cat="الأنشطة والملاعب" onclick="selectModalCategory('الأنشطة والملاعب')">
+                  <i class="fa-solid fa-futbol"></i> الأنشطة والملاعب
+                </button>
+                <button type="button" class="swal-cat-chip" data-cat="المسرح والفعاليات" onclick="selectModalCategory('المسرح والفعاليات')">
+                  <i class="fa-solid fa-masks-theater"></i> المسرح والفعاليات
+                </button>
+                <button type="button" class="swal-cat-chip" data-cat="المكتبة والثقافة" onclick="selectModalCategory('المكتبة والثقافة')">
+                  <i class="fa-solid fa-book-bookmark"></i> المكتبة والبحث
+                </button>
+              </div>
+
+              <!-- Custom Styled Select Box -->
+              <div style="position:relative;">
+                <select id="swal-input-photo-cat" onchange="syncCatChips(this.value)" style="width:100%; height:42px; border-radius:10px; border:1.5px solid #cbd5e1; background:#f8fafc; font-family:'IBM Plex Sans Arabic',sans-serif; font-size:13.5px; font-weight:600; color:#1e293b; padding:0 36px 0 14px; appearance:none; -webkit-appearance:none; outline:none; transition:all .2s ease; cursor:pointer;">
+                  <option value="المباني والمرافق">🏢 المباني والمرافق</option>
+                  <option value="المعامل التكنولوجية">💻 المعامل التكنولوجية والعلوم</option>
+                  <option value="الفصول الدراسية">🏫 الفصول الدراسية الذكية</option>
+                  <option value="رياض الأطفال">🧸 رياض الأطفال (KG)</option>
+                  <option value="الأنشطة والملاعب">⚽ الأنشطة والملاعب الرياضية</option>
+                  <option value="المسرح والفعاليات">🎭 المسرح والفعاليات والتكريم</option>
+                  <option value="المكتبة والثقافة">📚 المكتبة والأنشطة الثقافية</option>
+                </select>
+                <i class="fa-solid fa-chevron-down" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:#64748b; font-size:12px;"></i>
+              </div>
             </div>
 
             <div style="margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:10px;">
@@ -475,7 +560,7 @@
                 <summary style="cursor:pointer; color:#087a3c; font-weight:700; font-size:12px;">
                   <i class="fa-solid fa-link"></i> أو استخدم رابط صورة مباشر (URL اختياري)
                 </summary>
-                <input id="swal-input-photo-url" class="swal2-input" placeholder="https://example.com/photo.jpg" style="width:100%; margin-top:8px; font-size:13px; padding:8px;" oninput="handleUrlInput(this.value)">
+                <input id="swal-input-photo-url" class="custom-swal-input" placeholder="https://example.com/photo.jpg" style="margin-top:8px;" oninput="handleUrlInput(this.value)">
               </details>
             </div>
           </div>
@@ -546,6 +631,22 @@
         }
       }
     }
+
+    window.selectModalCategory = function(cat) {
+      const select = document.getElementById("swal-input-photo-cat");
+      if (select) select.value = cat;
+      window.syncCatChips(cat);
+    };
+
+    window.syncCatChips = function(cat) {
+      document.querySelectorAll(".swal-cat-chip").forEach((btn) => {
+        if (btn.getAttribute("data-cat") === cat) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+    };
 
     window.handlePhotoFileSelect = async function(file) {
       if (!file) return;
