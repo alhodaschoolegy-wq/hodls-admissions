@@ -70,15 +70,19 @@
 
   <script src="assets/js/adminCommon.js"></script>
   <script>
-    setupLoginForm(() => {
-      window.location.href = "/dashboard";
+    setupLoginForm((user) => {
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect") || "/dashboard";
+      window.location.href = redirect;
     });
 
     (async () => {
       try {
         const res = await apiRequest("me");
         if (res && res.user) {
-          window.location.href = "/dashboard";
+          const params = new URLSearchParams(window.location.search);
+          const redirect = params.get("redirect") || "/dashboard";
+          window.location.href = redirect;
         }
       } catch {
         // Not logged in, stay on login view

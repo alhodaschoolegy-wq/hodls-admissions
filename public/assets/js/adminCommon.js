@@ -21,7 +21,10 @@ async function apiRequest(action, options = {}, queryParams = null) {
   });
 
   if (res.status === 401) {
-    showLoginView();
+    // If not authenticated and not on login page, redirect to /admin login
+    if (!window.location.pathname.endsWith("admin") && !window.location.pathname.endsWith("admin.html")) {
+      window.location.href = `/admin?redirect=${encodeURIComponent(window.location.pathname)}`;
+    }
     throw new Error("انتهت جلسة العمل، يرجى إعادة تسجيل الدخول.");
   }
 
@@ -35,32 +38,18 @@ async function apiRequest(action, options = {}, queryParams = null) {
   return data;
 }
 
-function showLoginView() {
-  const loginView = document.getElementById("loginView");
-  const appView = document.getElementById("appView");
-  if (loginView) loginView.style.display = "grid";
-  if (appView) appView.style.display = "none";
-}
-
-function showAppView() {
-  const loginView = document.getElementById("loginView");
-  const appView = document.getElementById("appView");
-  if (loginView) loginView.style.display = "none";
-  if (appView) appView.style.display = "flex";
-}
-
 async function initAdminAuth(activePage, onReady) {
   try {
     const res = await apiRequest("me");
     currentUser = res.user;
 
-    // Check Role Restrictions
+    // Check Role Restrictions for Master Admin pages
     const isMaster = currentUser?.role === "master_admin";
     if ((activePage === "users" || activePage === "settings") && !isMaster) {
       Swal.fire({
         icon: "warning",
         title: "غير مصرح",
-        text: "هذه الصفحة مخصصة للمدير العام فقط.",
+        text: "هذه الصفحة مخصصة للمدير العام (Master Admin) فقط.",
         confirmButtonColor: "#087a3c"
       }).then(() => {
         window.location.href = "/dashboard";
@@ -68,7 +57,6 @@ async function initAdminAuth(activePage, onReady) {
       return;
     }
 
-    showAppView();
     applyUserToUI(currentUser, activePage);
     
     // Load Global Settings for Academic Year
@@ -87,7 +75,8 @@ async function initAdminAuth(activePage, onReady) {
       await onReady(currentUser, currentSettings);
     }
   } catch (err) {
-    showLoginView();
+    // Redirect to clean admin login portal
+    window.location.href = `/admin?redirect=${encodeURIComponent(window.location.pathname)}`;
   }
 }
 
@@ -134,7 +123,7 @@ function setupPasswordToggle() {
   });
 }
 
-// Login Handler
+// Login Handler (Used on /admin)
 function setupLoginForm(onSuccessCallback) {
   const form = document.getElementById("loginForm");
   if (!form) return;
@@ -158,8 +147,6 @@ function setupLoginForm(onSuccessCallback) {
         body: JSON.stringify({ username, password }),
       });
       currentUser = res.user;
-      showAppView();
-      applyUserToUI(currentUser);
 
       Swal.fire({
         toast: true,
@@ -167,13 +154,16 @@ function setupLoginForm(onSuccessCallback) {
         icon: "success",
         title: `مرحباً بك: ${res.user.fullName || res.user.username}`,
         showConfirmButton: false,
-        timer: 2000,
+        timer: 1500,
         background: "#04381e",
         color: "#fff",
       });
 
       if (typeof onSuccessCallback === "function") {
         await onSuccessCallback(currentUser);
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        window.location.href = params.get("redirect") || "/dashboard";
       }
     } catch (err) {
       if (errBox) {
@@ -196,7 +186,7 @@ async function logout() {
   try {
     await fetch("/api?action=logout", { method: "POST" });
   } finally {
-    showLoginView();
+    window.location.href = "/admin";
   }
 }
 
@@ -222,7 +212,7 @@ async function changeMyPassword() {
     confirmButtonText: 'تغيير كلمة المرور',
     cancelButtonText: 'إلغاء',
     showCancelButton: true,
-    confirmButtonColor: '#10b981',
+    confirmButtonColor: '#087a3c',
     cancelButtonColor: '#6b7280',
     preConfirm: () => {
       const curr = document.getElementById('swal-curr-pass').value.trim();
